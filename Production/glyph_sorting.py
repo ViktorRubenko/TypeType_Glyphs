@@ -35,7 +35,7 @@ def sort(font):
 if __name__ == '__main__':
     Glyphs.clearLog()
     for font in Glyphs.fonts:
-        font.customParameters['glyphOrder'] = ', '.join(sort(font))
+        font.customParameters['glyphOrder'] = sort(font)
         '''
 	    file_path = path.join(path.dirname(font.filepath), '{}_glyphs_order.txt'.format(font.familyName))
 	    with open(file_path, 'w') as f:
