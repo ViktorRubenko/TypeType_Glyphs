@@ -23,7 +23,7 @@ def sort(font):
 	for group in temp_d:
 		if group == 0:
 			continue
-		glyphs_parent = [(glyph_name, font[glyph_name.split(str(group))[0].split('.')[0])) for glyph_name in temp_d[group]]
+		glyphs_parent = [(glyph_name, font[glyph_name.split(str(group))[0].split('.')[0]]) for glyph_name in temp_d[group]]
 		temp_d[group] = sorted([g for g in glyphs_parent if g[1]], key=lambda g: g[1].unicode)
 		temp_d[group].extend(sorted([g for g in glyphs_parent if not g[1]], key=lambda k: k[0]))
 	temp_d[0] = [[glyph_name] for glyph_name in temp_d[0] if '_' in glyph_name] + [[glyph_name] for glyph_name in temp_d[0] if '_' not in glyph_name]
