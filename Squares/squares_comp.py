@@ -1,6 +1,6 @@
 #MenuTitle: Squares compensation
 # -*- coding: utf-8 -*-
-#Version: 0.1 (23 Sep, 2019)
+#Version: 0.1.1 (23 Sep, 2019)
 
 
 import math
@@ -38,40 +38,40 @@ def main():
 		line1 = sorted(selectedNodes[:2], key=lambda n: n.y, reverse=True)
 		line2 = sorted(selectedNodes[2:], key=lambda n: n.y, reverse=True)
 		thisLayer.beginChanges()
-		if line_lenght(*line1) > line_lenght(*line2):
+		if line_lenght(*line1) < line_lenght(*line2):
+			line1, line2 = line2, line1
 			#line1 = external
-			if line1[0].y > line2[0].y:
-				#external-top
-				print('external-top')
-				line1[0].x += delta
+		if line1[0].y > line2[0].y:
+			#external-top
+			if line1[0].x > line2[0].x:
+				print('external-top-right')
+				line1[0].x -= delta
 				line2[0].x += delta
-				line1[1].y += delta
+				line1[1].y -= delta
 				line2[1].y += delta
 			else:
-				#external-bot
-				print('external-bot')
-				line1[1].x += delta
-				line2[1].x += delta
-				line1[0].y += delta
-				line2[0].y += delta
-
+				print('external-top-left')
+				line1[0].x -= delta
+				line2[0].x += delta
+				line1[1].y += delta
+				line2[1].y -= delta
 		else:
-			#line1 = internal
-			if line2[0].y > line1[0].y:
-				#internal-top
-				print('external-top')
+			#external-bot
+			if line1[0].x > line2[0].x:
+				print('external-bot-right')
 				line1[0].x += delta
-				line2[0].x += delta
-				line1[1].y += delta
+				line2[0].x -= delta
+				line1[1].y -= delta
 				line2[1].y += delta
 			else:
-				#internal-bot
-				print('external-bot')
-				line1[1].x += delta
-				line2[1].x += delta
-				line1[0].y += delta
-				line2[0].y += delta
+				print('external-bot-left')
+				line1[0].x += delta
+				line2[0].x -= delta
+				line1[1].y += delta
+				line2[1].y -= delta
+
 		thisLayer.endChanges()
+
 
 if __name__ == '__main__':
 	main()
