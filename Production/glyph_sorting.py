@@ -1,6 +1,6 @@
 #MenuTitle: Glyps Sorting
 # -*- coding: utf-8 -*-
-#Version: 0.1 (26 June, 2019)
+#Version: 0.3 (16 Aug, 2019)
 
 from collections import defaultdict
 from os import path
@@ -14,13 +14,16 @@ def sort(font):
 	temp_d = defaultdict(list)
 	for glyph in wo_uni_glyphs:
 		if '.' in glyph.name:
-			temp_d[glyph.name[glyph.name.find('.')+1:]].append(glyph.name)
+			if glyph.name.split('.')[0].endswith('tab'):
+				temp_d['tab.{}'.format(glyph.name.split('.')[1])].append(glyph.name)
+			else:
+				temp_d[glyph.name.split('.')[1]].append(glyph.name)
 		else:
 			temp_d[0].append(glyph.name)
 	for group in temp_d:
 		if group == 0:
 			continue
-		glyphs_parent = [(glyph_name, font[glyph_name[:glyph_name.find('.')]]) for glyph_name in temp_d[group]]
+		glyphs_parent = [(glyph_name, font[glyph_name.split(str(group))[0].split('.')[0]]) for glyph_name in temp_d[group]]
 		temp_d[group] = sorted([g for g in glyphs_parent if g[1]], key=lambda g: g[1].unicode)
 		temp_d[group].extend(sorted([g for g in glyphs_parent if not g[1]], key=lambda k: k[0]))
 	temp_d[0] = [[glyph_name] for glyph_name in temp_d[0] if '_' in glyph_name] + [[glyph_name] for glyph_name in temp_d[0] if '_' not in glyph_name]
@@ -31,6 +34,7 @@ def sort(font):
 		glyphs_order.append('foundryicon')
 	
 	return glyphs_order
+
 	
 if __name__ == '__main__':
     Glyphs.clearLog()
@@ -43,3 +47,4 @@ if __name__ == '__main__':
 	        print('File was saved to {}'.format(file_path))
         '''
     Message('Glyph Sorting', 'Done')
+
