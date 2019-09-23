@@ -1,6 +1,6 @@
 #MenuTitle: Squares compensation
 # -*- coding: utf-8 -*-
-#Version: 0.1.1 (23 Sep, 2019)
+#Version: 0.1.2 (23 Sep, 2019)
 
 
 import math
@@ -59,16 +59,16 @@ def main():
 			#external-bot
 			if line1[0].x > line2[0].x:
 				print('external-bot-right')
-				line1[0].x += delta
-				line2[0].x -= delta
-				line1[1].y -= delta
-				line2[1].y += delta
+				line1[1].x += delta
+				line2[1].x -= delta
+				line1[0].y -= delta
+				line2[0].y += delta
 			else:
 				print('external-bot-left')
-				line1[0].x += delta
-				line2[0].x -= delta
-				line1[1].y += delta
-				line2[1].y -= delta
+				line1[1].x += delta
+				line2[1].x -= delta
+				line1[0].y += delta
+				line2[0].y -= delta
 
 		thisLayer.endChanges()
 
