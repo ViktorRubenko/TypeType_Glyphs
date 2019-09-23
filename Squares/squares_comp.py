@@ -1,9 +1,10 @@
 #MenuTitle: Squares compensation
 # -*- coding: utf-8 -*-
-#Version: 0.1.2 (23 Sep, 2019)
+#Version: 0.1.3 (23 Sep, 2019)
 
 
 import math
+import re
 from robofab.interface.all.dialogs import AskString
 
 def find_origin(nodes):
@@ -21,12 +22,16 @@ def line_lenght(fnode, snode):
 				
 
 def main():
-	delta = AskString('Enter delta for compensation')
-	if not delta:
-		return
-	delta = int(delta)
 	Glyphs.clearLog()
 	thisFont = Glyphs.font
+	
+	if thisFont.customParameters['ItalDelta']:
+		delta_up, delta_down = [int(x) for x in re.findall('[0-9]+', thisFont.customParameters['ItalDelta'])]
+	else:
+		delta = AskString('Enter delta for compensation')
+		delta_up, delta_down = int(delta), int(delta)
+		if not delta:
+			return
 	for thisLayer in thisFont.selectedLayers:
 		lines = []
 		selectedNodes = []
@@ -44,31 +49,31 @@ def main():
 		if line1[0].y > line2[0].y:
 			#external-top
 			if line1[0].x > line2[0].x:
-				print('external-top-right')
-				line1[0].x -= delta
-				line2[0].x += delta
-				line1[1].y -= delta
-				line2[1].y += delta
+				print('external-top-right', delta_down)
+				line1[0].x -= delta_down
+				line2[0].x += delta_down
+				line1[1].y -= delta_down
+				line2[1].y += delta_down
 			else:
-				print('external-top-left')
-				line1[0].x -= delta
-				line2[0].x += delta
-				line1[1].y += delta
-				line2[1].y -= delta
+				print('external-top-left', delta_up)
+				line1[0].x -= delta_up
+				line2[0].x += delta_up
+				line1[1].y += delta_up
+				line2[1].y -= delta_up
 		else:
 			#external-bot
 			if line1[0].x > line2[0].x:
-				print('external-bot-right')
-				line1[1].x += delta
-				line2[1].x -= delta
-				line1[0].y -= delta
-				line2[0].y += delta
+				print('external-bot-right', delta_up)
+				line1[1].x += delta_up
+				line2[1].x -= delta_up
+				line1[0].y -= delta_up
+				line2[0].y += delta_up
 			else:
-				print('external-bot-left')
-				line1[1].x += delta
-				line2[1].x -= delta
-				line1[0].y += delta
-				line2[0].y -= delta
+				print('external-bot-left', delta_down)
+				line1[1].x += delta_down
+				line2[1].x -= delta_down
+				line1[0].y += delta_down
+				line2[0].y -= delta_down
 
 		thisLayer.endChanges()
 
