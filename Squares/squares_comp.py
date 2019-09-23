@@ -33,6 +33,8 @@ def main():
 		for path in thisLayer.paths:
 			selectedNodes.extend([thisNode for thisNode in path.nodes if
 			thisNode.selected])
+		if len(selectedNodes) != 4:
+			return
 		line1 = sorted(selectedNodes[:2], key=lambda n: n.y, reverse=True)
 		line2 = sorted(selectedNodes[2:], key=lambda n: n.y, reverse=True)
 		thisLayer.beginChanges()
