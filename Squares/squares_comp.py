@@ -1,6 +1,6 @@
 #MenuTitle: Squares compensation
 # -*- coding: utf-8 -*-
-#Version: 0.1.2 (26 Sep, 2019)
+#Version: 0.1.3 (27 Sep, 2019)
 
 
 import math
@@ -23,15 +23,15 @@ def line_lenght(fnode, snode):
 
 def get_delta(thisLayer):
 	if thisLayer.master.customParameters['ItalDelta']:
-		delta_up, delta_down = [int(x) for x in re.findall('\-{0,1}\d+',
+		a,b,c,d,e,f,g,h = [int(x) for x in re.findall('\-{0,1}\d+',
 		thisLayer.master.customParameters['ItalDelta'])]
 	elif thisLayer.master.font.customParameters['ItalDelta']:
-		delta_up, delta_down = [int(x) for x in re.findall('\-{0,1}\d+',
+		a,b,c,d,e,f,g,h = [int(x) for x in re.findall('\-{0,1}\d+',
 		thisLayer.master.font.customParameters['ItalDelta'])]
 	else:
 		delta = AskString('Enter delta for compensation')
-		delta_up, delta_down = int(delta), int(delta)
-	return delta_up, delta_down
+		a,b,c,d,e,f,g,h = [int(delta) for x in range(8)]
+	return a,b,c,d,e,f,g,h
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
 	thisFont = Glyphs.font
 	
 	for thisLayer in thisFont.selectedLayers:
-		delta_up, delta_down = get_delta(thisLayer)
+		a,b,c,d,e,f,g,h = get_delta(thisLayer)
 		lines = []
 		selectedNodes = []
 		for path in thisLayer.paths:
@@ -56,31 +56,31 @@ def main():
 		if line1[0].y > line2[0].y:
 			#external-top
 			if line1[0].x > line2[0].x:
-				print('external-top-right', delta_down)
-				line1[0].x -= delta_down
-				line2[0].x += delta_down
-				line1[1].y -= delta_down
-				line2[1].y += delta_down
+				print('external-top-right')
+				line1[0].x -= g
+				line1[1].y -= h
+				line2[0].x += e
+				line2[1].y += f
 			else:
-				print('external-top-left', delta_up)
-				line1[0].x -= delta_up
-				line2[0].x += delta_up
-				line1[1].y += delta_up
-				line2[1].y -= delta_up
+				print('external-top-left')
+				line1[0].x -= c
+				line1[1].y += d
+				line2[0].x += a
+				line2[1].y -= b
 		else:
 			#external-bot
 			if line1[0].x > line2[0].x:
-				print('external-bot-right', delta_up)
-				line1[1].x += delta_up
-				line2[1].x -= delta_up
-				line1[0].y -= delta_up
-				line2[0].y += delta_up
+				print('external-bot-right')
+				line1[1].x += c
+				line1[0].y -= d
+				line2[1].x -= a
+				line2[0].y += b
 			else:
-				print('external-bot-left', delta_down)
-				line1[1].x += delta_down
-				line2[1].x -= delta_down
-				line1[0].y += delta_down
-				line2[0].y -= delta_down
+				print('external-bot-left')
+				line1[1].x += g
+				line1[0].y += h
+				line2[1].x -= e
+				line2[0].y -= f
 
 		thisLayer.endChanges()
 
