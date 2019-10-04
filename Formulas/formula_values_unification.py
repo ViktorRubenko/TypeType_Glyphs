@@ -1,6 +1,6 @@
 #MenuTitle: Formula values unification
 # -*- coding: utf-8 -*-
-#Version: 0.2.2 (04 Oct, 2019)
+#Version: 0.2.3 (04 Oct, 2019)
 
 
 import re
@@ -16,9 +16,8 @@ def set_general_formula(thisGlyph, thisMasterIndex, attrib):
     	attrib_value = master_layer.__getattribute__(attrib)
     else:
     	attrib_value = thisGlyph.__getattribute__(attrib)
-    print(attrib_value)
     # clear formula in all masters
-    for thisLayer in glyph.layers:
+    for thisLayer in thisGlyph.layers:
         thisLayer.__setattr__(attrib, None)
     # set general
     thisGlyph.__setattr__(attrib, re.sub('[=]+', '=', attrib_value))
@@ -69,7 +68,9 @@ def main():
     Glyphs.clearLog()
     font = Glyphs.font
     thisMasterIndex = font.masterIndex
-    for thisGlyph in font.glyphs[5:6]:
+    for thisGlyph in font.glyphs:
+    	if thisGlyph.name != 'L':
+    		continue
         for attrib in ('leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey'):
             update_metrics(thisGlyph)
             if (thisGlyph.layers[thisMasterIndex].__getattribute__(attrib) or
