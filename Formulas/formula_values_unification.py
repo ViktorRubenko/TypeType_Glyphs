@@ -1,6 +1,6 @@
 #MenuTitle: Formula values unification
 # -*- coding: utf-8 -*-
-#Version: 0.2.3 (04 Oct, 2019)
+#Version: 0.2.4 (07 Oct, 2019)
 
 
 import re
@@ -69,7 +69,7 @@ def main():
     font = Glyphs.font
     thisMasterIndex = font.masterIndex
     for thisGlyph in font.glyphs:
-    	if thisGlyph.name != 'L':
+    	if not thisGlyph.selected:
     		continue
         for attrib in ('leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey'):
             update_metrics(thisGlyph)
