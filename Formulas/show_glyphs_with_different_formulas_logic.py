@@ -1,6 +1,6 @@
 #MenuTitle: Show glyphs with different formula logic
 # -*- coding: utf-8 -*-
-#Version: 0.1.2 (07 Oct, 2019)
+#Version: 0.1.3 (07 Oct, 2019)
 
 
 import re
@@ -41,12 +41,15 @@ for thisGlyph in font.glyphs:
 	#newTab = True
 	passed = False
 	for attrib in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
-		for thisLayer in thisGlyph.layers:
-			if thisLayer.__getattribute__(attrib):
-				add_to_log(thisGlyph, log, attrib)
-				passed = True
-				print(thisLayer, thisLayer.__getattribute__(attrib))
-				break
+		if (sum(0 if not layer.__getattribute__(attrib) else 1 
+			for layer in thisGlyph.layers) != len(thisGlyph.layers)):
+				for thisLayer in thisGlyph.layers:
+					if thisLayer.__getattribute__(attrib):
+						add_to_log(thisGlyph, log, attrib)
+						passed = True
+						break
+				if passed:
+					break
 		if passed:
 			break
 		
