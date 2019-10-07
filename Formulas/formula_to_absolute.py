@@ -1,6 +1,6 @@
 #MenuTitle: Formula to Absolute
 # -*- coding: utf-8 -*-
-#Version: 0.1.2 (04 Oct, 2019)
+#Version: 0.1.3 (07 Oct, 2019)
 
 Glyphs.clearLog()
 font = Glyphs.font
@@ -11,27 +11,28 @@ attribs = {
 	'rightMetricsKey': 'RSB',
 	'widthMetricsKey': 'width'
 	}
-for thisGlyph in font.glyphs:	
+for selectedLayer in font.selectedLayers:
+	thisGlyph = selectedLayer.parent
 	absolute = []
-	thisLayer = thisGlyph.layers[selectedMasterIdx]
 	for attrib in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
 		process = False
 		if sum([0 if not layer.__getattribute__(attrib) else 1
 			for layer in thisGlyph.layers]) == len(thisGlyph.layers):
 				thisGlyph.__setattr__(attrib, None)
 				process = True
-		if thisLayer.__getattribute__(attrib) and not thisGlyph.__getattribute__(attrib):
+		if selectedLayer.__getattribute__(attrib) and not thisGlyph.__getattribute__(attrib):
 			process = True
 		if process:
-			absolute.append('{}: {}=>{}'.format(attribs[attrib],
-				thisLayer.__getattribute__(attrib), 
-				thisLayer.__getattribute__(attribs[attrib]))
+			absolute.append('{}: "{}" => {}'.format(attribs[attrib],
+				selectedLayer.__getattribute__(attrib), 
+				selectedLayer.__getattribute__(attribs[attrib]))
 				)
-			thisLayer.__setattr__(attrib, None)
+			selectedLayer.__setattr__(attrib, None)
 			log.append('{}: {}'.format(thisGlyph.name, '; '.join(absolute)))
-		thisLayer.syncMetrics()
+		selectedLayer.syncMetrics()
 			
 if log:
-	Message('\n'.join(log))
+	print('\n'.join(log))
+	Glyphs.showMacroWindow()
 else:
 	Message('Nothing found')
