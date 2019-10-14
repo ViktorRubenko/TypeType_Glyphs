@@ -1,9 +1,6 @@
 #MenuTitle: Replace Notdef
 # -*- coding: utf-8 -*-
-#Version: 0.0.1 (14 Oct, 2019)
-
-
-import os
+#Version: 0.1 (14 Oct, 2019)
 
 
 def find_nd_font(fonts):
@@ -14,8 +11,8 @@ def find_nd_font(fonts):
 
 
 def replace_nd(fonts, font_nd_index, font_nd):
-	if not font_nd_index:
-		Glyphs.Message('Notdef.glyphs is not opened')
+	if font_nd_index == None:
+		Message('Notdef.glyphs is not opened')
 		return
 	nd_layer = font_nd['.notdef'].layers[0]
 	for font_index, font in enumerate(fonts):
@@ -32,6 +29,9 @@ def replace_nd(fonts, font_nd_index, font_nd):
 
 def main():
 	Glyphs.clearLog()
+	nd_filepath = os.path.join('/'.join(vanilla.__file__.split('/')[:-2]), 
+		'TypeType_Glyphs/Production/Notdef.glyphs')
+	Glyphs.open(nd_filepath)
 	fonts = Glyphs.fonts
 	replace_nd(fonts, *find_nd_font(fonts))
 	
