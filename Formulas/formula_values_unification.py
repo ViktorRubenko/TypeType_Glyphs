@@ -1,6 +1,6 @@
 #MenuTitle: Formula values unification
 # -*- coding: utf-8 -*-
-#Version: 0.3.0 (07 Oct, 2019)
+#Version: 0.3.1 (14 Oct, 2019)
 
 
 import re
@@ -11,6 +11,8 @@ def update_metrics(thisGlyph):
 		thisLayer.syncMetrics()
 		
 def set_master_formula(thisGlyph, thisMasterIndex, attrib):
+	
+	log = []
 	
 	attribs = {
 		'rightMetricsKey': 'RSB',
@@ -33,7 +35,14 @@ def set_master_formula(thisGlyph, thisMasterIndex, attrib):
 		increment = 0
 		
 	for thisLayerIndex, thisLayer in enumerate(thisGlyph.layers):
+		
+		log.append('\t\t{}: {}({}) => '.format(thisLayer.name,
+								thisLayer.__getattribute__(attrib),
+								thisLayer.__getattribute__(attribs[attrib])))
+											
 		if thisLayerIndex == thisMasterIndex:
+			log[-1] = log[-1] + '{}({}) REF'.format(thisLayer.__getattribute__(attrib),
+												thisLayer.__getattribute__(attribs[attrib]))
 			continue
 		oldValue = thisLayer.__getattribute__(attribs[attrib])
 		if glyph_formula == master_formula:
@@ -57,6 +66,14 @@ def set_master_formula(thisGlyph, thisMasterIndex, attrib):
 					thisLayer.__setattr__(attrib, master_formula + delta)
 			else:
 				thisLayer.__setattr__(attrib, re.sub(r'[+-]?\d+', '', master_formula))
+			
+			update_metrics(thisGlyph)
+		log[-1] = log[-1] + '{}({})'.format(thisLayer.__getattribute__(attrib),
+											thisLayer.__getattribute__(attribs[attrib]))
+					
+	print('\t' + attribs[attrib])
+	print('\n'.join(log))
+	print('\n')
 				
 
 def main():
@@ -66,10 +83,11 @@ def main():
 	for thisGlyph in font.glyphs:
 		if not thisGlyph.selected:
 			continue
+		print('Glyph: ' + thisGlyph.name)
 		for attrib in ('leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey'):
 			update_metrics(thisGlyph)
 			set_master_formula(thisGlyph, thisMasterIndex, attrib)
-			update_metrics(thisGlyph)
+		print('\n')
 			
 	
 	
