@@ -1,6 +1,6 @@
 #MenuTitle: Formula values unification
 # -*- coding: utf-8 -*-
-#Version: 0.3.1 (14 Oct, 2019)
+#Version: 0.3.3 (21 Oct, 2019)
 
 
 import re
@@ -66,7 +66,13 @@ def set_master_formula(thisGlyph, thisMasterIndex, attrib):
 					thisLayer.__setattr__(attrib, master_formula + delta)
 			else:
 				thisLayer.__setattr__(attrib, re.sub(r'[+-]?\d+', '', master_formula))
-			
+			update_metrics(thisGlyph)
+			tLformula = thisLayer.__getattribute__(attrib)
+			if tLformula:
+				exception = re.findall(r'==(\d+[+-]\d+)\b',
+										thisLayer.__getattribute__(attrib))
+				if exception:
+					thisLayer.__setattr__(attrib, '=={}'.format(eval(exception[0])))
 			update_metrics(thisGlyph)
 		log[-1] = log[-1] + '{}({})'.format(thisLayer.__getattribute__(attrib),
 											thisLayer.__getattribute__(attribs[attrib]))
