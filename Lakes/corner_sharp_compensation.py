@@ -1,6 +1,6 @@
 # MenuTitle: corner sharp_hand compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1 (13 Jan, 2020)
+# Version: 0.1.2 (13 Jan, 2020)
 
 from collections import defaultdict
 import copy
@@ -39,16 +39,19 @@ def load_obtuse(font, masterIndex):
     return paths
 
 
-def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type):
+def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type):
     for masterIndex, master in enumerate(font.masters):
         if corner_type in (0, 1):
             delta = master.customParameters["corner_bottom_move"]
         else:
             delta = master.customParameters["corner_top_move"]
-
-        layer = glyph.layers[masterIndex]
-        path = layer.paths[pathIndex]
-        path.nodes[nodeIndex].x += int(delta)
+	try:
+        	layer = glyph.layers[masterIndex]
+        	path = layer.paths[pathIndex]
+        	path.nodes[nodeIndex].x += int(delta)
+        except:
+        	print('{}: uncompatible outlines'.format(master.name))
+        	Glyphs.showMacroWindow()
 
 
 def main():
@@ -57,33 +60,36 @@ def main():
     if not verify_params(font):
         return
     masterIndex = font.masterIndex
-    for glyph in [glyph for glyph in font.glyphs if glyph.selected]:
-        corners_found = 0
-        node_indices = []
-        layer = glyph.layers[masterIndex]
-        for pathIndex, path in enumerate(layer.paths):
-            selected_nodes = [node for node in path.nodes if node.selected]
-            if selected_nodes:
-                if len(selected_nodes) < 4:
-                    raise ValueError("at least 4 nodes must be selected")
-                for i in range(len(selected_nodes) - 3):
-                    types = [selected_nodes[i + j].type for j in range(4)]
-                    if types == ["line", "offcurve", "offcurve", "curve"]:
-                        corners_found += 1
-                        corner_type = 0
-                        if selected_nodes[i].x > selected_nodes[i + 3].x:
-                            corner_type += 2
-                            if selected_nodes[i].y > selected_nodes[i + 3].y:
-                                corner_type += 1
-                        elif selected_nodes[i].y < selected_nodes[i + 3].y:
+    currTab = font.currentTab
+    glyph_name = currTab.text[currTab.textCursor]
+    glyph = font[glyph_name]
+    corners_found = 0
+    node_indices = []
+    layer = glyph.layers[masterIndex]
+    for pathIndex, path in enumerate(layer.paths):
+        selected_nodes = [node for node in path.nodes if node.selected]
+        if selected_nodes:
+            if len(selected_nodes) < 4:
+                raise ValueError("at least 4 nodes must be selected")
+            for i in range(len(selected_nodes) - 3):
+                types = [selected_nodes[i + j].type for j in range(4)]
+                if types == ["line", "offcurve", "offcurve", "curve"]:
+                    corners_found += 1
+                    corner_type = 0
+                    if selected_nodes[i].x > selected_nodes[i + 3].x:
+                        corner_type += 2
+                        if selected_nodes[i].y > selected_nodes[i + 3].y:
                             corner_type += 1
-                        nodeIndex = selected_nodes[
-                            i + MODIFIED_INDICES[corner_type]
-                        ].index
-                        compensate_node(
-                            font, glyph, pathIndex, nodeIndex, corner_type
-                        )
-        print("{}: {} corners found".format(glyph.name, corners_found))
+                    elif selected_nodes[i].y < selected_nodes[i + 3].y:
+                        corner_type += 1
+                    mod_node = selected_nodes[
+                        i + MODIFIED_INDICES[corner_type]
+                    ]
+                    compensate_node(
+                        font, glyph, pathIndex, mod_node.index,
+                        corner_type, node.type
+                    )
+    print("{}: {} corners found".format(glyph.name, corners_found))
 
 
 if __name__ == "__main__":
