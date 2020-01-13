@@ -38,16 +38,19 @@ def load_obtuse(font, masterIndex):
         path.applyTransform([0, 1, -1, 0, 0, 0])
     return paths
     
-def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type):
-	for masterIndex, master in enumerate(font.masters):
-		if corner_type in (0, 1):
-			delta = master.customParameters['corner_bottom_move']
-		else:
-			delta = master.customParameters['corner_top_move']
-		
-		layer = glyph.layers[masterIndex]
-		path = layer.paths[pathIndex]
-		path.nodes[nodeIndex].x += int(delta)
+def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type):
+    for masterIndex, master in enumerate(font.masters):
+        if corner_type in (0, 1):
+            delta = master.customParameters["corner_bottom_move"]
+        else:
+            delta = master.customParameters["corner_top_move"]
+	try:
+        	layer = glyph.layers[masterIndex]
+        	path = layer.paths[pathIndex]
+        	path.nodes[nodeIndex].x += int(delta)
+        except:
+        	print('{}: uncompatible outlines'.format(master.name))
+        	Glyphs.showMacroWindow()
 
 
 def main():
@@ -75,7 +78,7 @@ def main():
                         mod_node = segment[MODIFIED_INDICES[corner_type]]
                         for nodeIndex, node in enumerate(path.nodes):
                         	if node.position == (mod_node.x, mod_node.y):
-                        		compensate_node(font, glyph, pathIndex, nodeIndex, corner_type)
+                        		compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node.type)
         print('{}: {} corners found'.format(glyph.name, corners_found))
                             
 
