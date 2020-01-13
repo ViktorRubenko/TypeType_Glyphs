@@ -1,6 +1,6 @@
 # MenuTitle: corner sharp_hand compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.2 (13 Jan, 2020)
+# Version: 0.1.3 (13 Jan, 2020)
 
 from collections import defaultdict
 import copy
@@ -62,7 +62,7 @@ def main():
     masterIndex = font.masterIndex
     currTab = font.currentTab
     glyph_name = currTab.text[currTab.textCursor]
-    glyph = font[glyph_name]
+    glyph = font[Glyphs.niceGlyphName(glyph_name)]
     corners_found = 0
     node_indices = []
     layer = glyph.layers[masterIndex]
