@@ -1,4 +1,4 @@
-# MenuTitle: corner_OVAL_out compensation
+# MenuTitle: corner_OVAL compensation
 # -*- coding: utf-8 -*-
 # Version: 0.1.3 (16 Jan, 2020)
 
