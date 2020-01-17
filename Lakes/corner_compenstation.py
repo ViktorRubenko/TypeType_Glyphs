@@ -31,6 +31,7 @@ class SelectCorner:
 	
 	def Run(self, sender):
 		self.run_func(self.w.comboBox.get())
+		self.w.close()
 			
 # Index for corner orientation type after Transformation
 # 0 - bot-left
