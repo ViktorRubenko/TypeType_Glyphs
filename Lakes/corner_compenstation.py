@@ -1,6 +1,6 @@
-# MenuTitle: corner_OVAL compensation
+# MenuTitle: corner compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.3 (16 Jan, 2020)
+# Version: 0.1.4 (16 Jan, 2020)
 
 
 import vanilla
@@ -16,10 +16,8 @@ class SelectCorner:
 		self.w.comboBox = vanilla.ComboBox(
 			(10,10, -10, 21),
 			[
-				"_corner.OVAL_in", 
-				"_corner.OVAL_out", 
-				"_corner.oval_in", 
-				"_corner.oval_out",
+                                glyph.name for glyph in Glyphs.font.glyphs
+                                 if glyph.name.startswith('_corner')
 			],
 		)
 	
