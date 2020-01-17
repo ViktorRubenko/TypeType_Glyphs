@@ -1,6 +1,6 @@
 # MenuTitle: corner compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.4 (16 Jan, 2020)
+# Version: 0.1.5 (17 Jan, 2020)
 
 
 import vanilla
@@ -31,7 +31,6 @@ class SelectCorner:
 	
 	def Run(self, sender):
 		self.run_func(self.w.comboBox.get())
-		self.w.close()
 			
 # Index for corner orientation type after Transformation
 # 0 - bot-left
@@ -40,10 +39,11 @@ class SelectCorner:
 # 3 - top_left
 
 
-def verify_params(font):
+def verify_params(font, corner_name):
     param_ok = True
     for master in font.masters:
-        for param in ("A B C D".split()):
+        for letter in ("A B C D".split()):
+            param = '{}_{}'.format(letter, corner_name)
             if param not in master.customParameters:
                 print('{}: "{}" is not set'.format(master.name, param))
                 param_ok = False
@@ -65,51 +65,51 @@ def load_corner(font, masterIndex, corner_name):
     	path.reverse()
     return paths
     
-def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, rev_contour):
+def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, rev_contour, corner_name):
     for masterIndex, master in enumerate(font.masters):
         if corner_type == 0:
         	if node_type == 0:
         		delta = tuple(
-        			int(_.strip()) for _ in master.customParameters["D"].split(',')
+        			int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
         		)
         	else:
         		delta = tuple(
-        			int(_.strip()) for _ in master.customParameters["C"].split(',')
+        			int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
         		)
         		if rev_contour:
         			delta = (-delta[0], -delta[1])
         elif corner_type == 1:
         	if node_type == 0:
         		delta = tuple(
-        			int(_.strip()) for _ in master.customParameters["B"].split(',')
+        			int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
         		if rev_contour:
         			delta = (-delta[0], -delta[1])
         	else:
         		delta = tuple(
-        			int(_.strip()) for _ in master.customParameters["A"].split(',')
+        			int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
         		)
         elif corner_type == 2:
         	if node_type == 0:
         		delta = tuple(
-        			-int(_.strip()) for _ in master.customParameters["D"].split(',')
+        			-int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
         		)
         	else:
         		delta = tuple(
-        			-int(_.strip()) for _ in master.customParameters["C"].split(',')
+        			-int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
         		)
         		if rev_contour:
         			delta = (-delta[0], -delta[1])
         elif corner_type == 3:
         	if node_type == 0:
         		delta = tuple(
-        			-int(_.strip()) for _ in master.customParameters["B"].split(',')
+        			-int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
         		if rev_contour:
         			delta = (-delta[0], -delta[1])
         	else:
         		delta = tuple(
-        			-int(_.strip()) for _ in master.customParameters["A"].split(',')
+        			-int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
         		)
         layer = glyph.layers[masterIndex]
         path = layer.paths[pathIndex]
@@ -121,7 +121,7 @@ def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, r
 def run(corner_name):
     Glyphs.clearLog()
     font = Glyphs.font
-    if not verify_params(font):
+    if not verify_params(font, corner_name.split('.')[-1]):
         return
     masterIndex = font.masterIndex
     corner_paths = load_corner(font, masterIndex, corner_name)
@@ -151,10 +151,12 @@ def run(corner_name):
                         				nodeIndex, 
                         				corner_type, 
                         				node_type,
-                        				rev_contour = '_in' in corner_name,
+                        				'_in' in corner_name,
+                        				corner_name.split('.')[-1]
                         			)
                         			break
-        print('{}: {} corners found'.format(glyph.name, corners_found))
+        if corners_found:
+        	print('{}: {} corners found'.format(glyph.name, corners_found))
 	Glyphs.showMacroWindow()
 		
 SelectCorner(run)
