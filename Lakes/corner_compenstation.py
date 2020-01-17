@@ -122,6 +122,7 @@ def run(corner_name):
     Glyphs.clearLog()
     font = Glyphs.font
     if not verify_params(font, corner_name.split('.')[-1]):
+    	Glyphs.showMacroWindow()
         return
     masterIndex = font.masterIndex
     corner_paths = load_corner(font, masterIndex, corner_name)
