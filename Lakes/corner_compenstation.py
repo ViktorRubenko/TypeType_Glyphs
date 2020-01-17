@@ -1,6 +1,6 @@
 # MenuTitle: corner compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.5 (17 Jan, 2020)
+# Version: 0.1.7 (17 Jan, 2020)
 
 
 import vanilla
@@ -53,19 +53,18 @@ def verify_params(font, corner_name):
 def load_corner(font, masterIndex, corner_name):
     corner_glyph = font[corner_name]
     path = corner_glyph.layers[masterIndex].paths[0]
-    in_fix = 0
-    if '_in' in corner_name:
-    	path.reverse()
-    	in_fix = 3
     paths = {}
     for i in range(4):
-        paths[abs(i - in_fix)] = tuple(copy.deepcopy(path.nodes))
+        paths[i] = tuple(copy.deepcopy(path.nodes))
         path.applyTransform([0, 1, -1, 0, 0, 0])
-    if '_in' in corner_name:
-    	path.reverse()
+    path.reverse()
+    for i in range(4,8):
+        paths[i] = tuple(copy.deepcopy(path.nodes))
+        path.applyTransform([0, 1, -1, 0, 0, 0])
+    path.reverse()
     return paths
     
-def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, rev_contour, corner_name):
+def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, corner_name):
     for masterIndex, master in enumerate(font.masters):
         if corner_type == 0:
         	if node_type == 0:
@@ -76,15 +75,11 @@ def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, r
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
         		)
-        		if rev_contour:
-        			delta = (-delta[0], -delta[1])
         elif corner_type == 1:
         	if node_type == 0:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
-        		if rev_contour:
-        			delta = (-delta[0], -delta[1])
         	else:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
@@ -98,19 +93,52 @@ def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, r
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
         		)
-        		if rev_contour:
-        			delta = (-delta[0], -delta[1])
         elif corner_type == 3:
         	if node_type == 0:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
-        		if rev_contour:
-        			delta = (-delta[0], -delta[1])
         	else:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
         		)
+        if corner_type == 4:
+        	if node_type == 3:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
+        		)
+        	else:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
+        		)
+        elif corner_type == 5:
+        	if node_type == 3:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
+        		)
+        	else:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
+        		)
+        elif corner_type == 6:
+        	if node_type == 3:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
+        		)
+        	else:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
+        		)
+        elif corner_type == 7:
+        	if node_type == 3:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
+        		)
+        	else:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
+        		)
+
         layer = glyph.layers[masterIndex]
         path = layer.paths[pathIndex]
         node = path.nodes[nodeIndex]
@@ -152,7 +180,6 @@ def run(corner_name):
                         				nodeIndex, 
                         				corner_type, 
                         				node_type,
-                        				'_in' in corner_name,
                         				corner_name.split('.')[-1]
                         			)
                         			break
