@@ -1,6 +1,6 @@
 # MenuTitle: corner compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.7 (17 Jan, 2020)
+# Version: 0.1.8 (20 Jan, 2020)
 
 
 import vanilla
@@ -155,6 +155,9 @@ def run(corner_name):
     masterIndex = font.masterIndex
     corner_paths = load_corner(font, masterIndex, corner_name)
     for glyph in [glyph for glyph in font.glyphs if glyph.selected]:
+        if glyph.name == corner_name:
+        	print('{} passed'.format(glyph.name))
+        	continue
         corners_found = 0
         node_indices = []
         layer = glyph.layers[masterIndex]
