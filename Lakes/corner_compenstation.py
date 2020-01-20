@@ -1,6 +1,6 @@
 # MenuTitle: corner compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.8 (20 Jan, 2020)
+# Version: 0.1.9 (20 Jan, 2020)
 
 
 import vanilla
@@ -42,7 +42,7 @@ class SelectCorner:
 def verify_params(font, corner_name):
     param_ok = True
     for master in font.masters:
-        for letter in ("A B C D".split()):
+        for letter in ("A AA B BB C CC D DD".split()):
             param = '{}_{}'.format(letter, corner_name)
             if param not in master.customParameters:
                 print('{}: "{}" is not set'.format(master.name, param))
@@ -71,73 +71,141 @@ def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, c
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 3:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["DD_" + corner_name].split(',')
+        		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["CC_" + corner_name].split(',')
         		)
         elif corner_type == 1:
         	if node_type == 0:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 3:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
         		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["BB_" + corner_name].split(',')
+        		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["AA_" + corner_name].split(',')
+        		)
+
         elif corner_type == 2:
         	if node_type == 0:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 3:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["DD_" + corner_name].split(',')
+        		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["CC_" + corner_name].split(',')
         		)
         elif corner_type == 3:
         	if node_type == 0:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 3:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["BB_" + corner_name].split(',')
+        		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["AA_" + corner_name].split(',')
         		)
         if corner_type == 4:
         	if node_type == 3:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 0:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
+        		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["DD_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["CC_" + corner_name].split(',')
         		)
         elif corner_type == 5:
         	if node_type == 3:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 0:
         		delta = tuple(
         			int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
         		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["BB_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			int(_.strip()) for _ in master.customParameters["AA_" + corner_name].split(',')
+        		)
+
         elif corner_type == 6:
         	if node_type == 3:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["D_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 0:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["C_" + corner_name].split(',')
         		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["DD_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["CC_" + corner_name].split(',')
+        		)
+
         elif corner_type == 7:
         	if node_type == 3:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["B_" + corner_name].split(',')
         		)
-        	else:
+        	elif node_type == 0:
         		delta = tuple(
         			-int(_.strip()) for _ in master.customParameters["A_" + corner_name].split(',')
         		)
+        	elif node_type == 2:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["AA_" + corner_name].split(',')
+        		)
+        	elif node_type == 1:
+        		delta = tuple(
+        			-int(_.strip()) for _ in master.customParameters["BB_" + corner_name].split(',')
+        		)
+
 
         layer = glyph.layers[masterIndex]
         path = layer.paths[pathIndex]
@@ -172,7 +240,7 @@ def run(corner_name):
                     ]
                     if normalize_nodes == [(n.x, n.y) for n in corner_path]:
                         corners_found += 1
-                        for node_type in (0, 3):
+                        for node_type in range(4):
                         	mod_node = segment[node_type]
                         	for nodeIndex, node in enumerate(path.nodes):
                         		if node.position == (mod_node.x, mod_node.y):
