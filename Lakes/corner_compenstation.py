@@ -1,6 +1,6 @@
 # MenuTitle: corner compensation
 # -*- coding: utf-8 -*-
-# Version: 0.1.9 (20 Jan, 2020)
+# Version: 0.1.9.1 (20 Jan, 2020)
 
 
 import vanilla
@@ -199,11 +199,11 @@ def compensate_node(font, glyph, pathIndex, nodeIndex, corner_type, node_type, c
         		)
         	elif node_type == 2:
         		delta = tuple(
-        			-int(_.strip()) for _ in master.customParameters["AA_" + corner_name].split(',')
+        			-int(_.strip()) for _ in master.customParameters["BB_" + corner_name].split(',')
         		)
         	elif node_type == 1:
         		delta = tuple(
-        			-int(_.strip()) for _ in master.customParameters["BB_" + corner_name].split(',')
+        			-int(_.strip()) for _ in master.customParameters["AA_" + corner_name].split(',')
         		)
 
 
