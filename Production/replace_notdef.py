@@ -24,12 +24,17 @@ def replace_nd(fonts, font_nd_index, font_nd):
                 for master_index, master in enumerate(font.masters):
                         layer = font['.notdef'].layers[master_index]
                         layer.paths = nd_layer.paths
+                for master_index, master in enumerate(font.masters):
+                        layer = font['notdef'].layers[master_index]
                         if master.italicAngle == 0:
                                 metrics = (100, 100, 900)
+                                for attrib_i, attrib in enumerate('LSB RSB width'.split()):
+                                        layer.__setattr__(attrib, metrics[attrib_i])
                         else:
                                 metrics = (20, 20, 900)
-                        for attrib_i, attrib in enumerate('LSB RSB width'.split()):
-                                layer.__setattr__(attrib, metrics[attrib_i])
+                                for attrib_i, attrib in enumerate('leftMetricsKey rightMetricsKey widthMetricsKey'.split()):
+                                        layer.__setattr__(attrib, '=={}'.format(metrics[attrib_i]))
+                        
 		print('{}: notdef replaced'.format(font.familyName))
 
 def main():
