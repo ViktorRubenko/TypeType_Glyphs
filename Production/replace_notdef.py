@@ -1,6 +1,6 @@
 #MenuTitle: Replace Notdef
 # -*- coding: utf-8 -*-
-#Version: 0.1.1 (15 Oct, 2019)
+#Version: 0.1.2 (23 Jan, 2020)
 
 
 def find_nd_font(fonts):
@@ -11,6 +11,7 @@ def find_nd_font(fonts):
 
 
 def replace_nd(fonts, font_nd_index, font_nd):
+        set_metrics = False
 	if font_nd_index == None:
 		Message('Notdef.glyphs is not opened')
 		return
@@ -21,10 +22,13 @@ def replace_nd(fonts, font_nd_index, font_nd):
 		if font['.notdef']:
 			del(font.glyphs['.notdef'])
 		font.glyphs.append(GSGlyph('.notdef'))
-		for layer in font['.notdef'].layers:
-			layer.paths = nd_layer.paths
-			for attrib in ['LSB', 'RSB', 'width']:
-				layer.__setattr__(attrib, nd_layer.__getattribute__(attrib))
+                for master_index, master in enumerate(font.masters):
+                        layer = font['.notdef'].layers[master_index]
+                        layer.paths = nd_layer.paths
+                        if not set_metrics and master.italicAngle == 0:
+                                for attrib in 'LSB RSB width'.split():
+                                        layer.__setattr__(attrib, nd_layer.__getattribute__(attrib))
+                                set_metrics = True
 		print('{}: notdef replaced'.format(font.familyName))
 
 def main():
