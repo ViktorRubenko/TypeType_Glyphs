@@ -25,7 +25,7 @@ def replace_nd(fonts, font_nd_index, font_nd):
                         layer = font['.notdef'].layers[master_index]
                         layer.paths = nd_layer.paths
                 for master_index, master in enumerate(font.masters):
-                        layer = font['notdef'].layers[master_index]
+                        layer = font['.notdef'].layers[master_index]
                         if master.italicAngle == 0:
                                 metrics = (100, 100, 900)
                                 for attrib_i, attrib in enumerate('LSB RSB width'.split()):
