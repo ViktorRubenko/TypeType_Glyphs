@@ -31,8 +31,8 @@ def replace_nd(fonts, font_nd_index, font_nd):
                                 for attrib_i, attrib in enumerate('LSB RSB width'.split()):
                                         layer.__setattr__(attrib, metrics[attrib_i])
                         else:
-                                metrics = (20, 20, 900)
-                                for attrib_i, attrib in enumerate('leftMetricsKey rightMetricsKey widthMetricsKey'.split()):
+                                metrics = (20, 20)
+                                for attrib_i, attrib in enumerate('leftMetricsKey rightMetricsKey'.split()):
                                         layer.__setattr__(attrib, '=={}'.format(metrics[attrib_i]))
                         
 		print('{}: notdef replaced'.format(font.familyName))
