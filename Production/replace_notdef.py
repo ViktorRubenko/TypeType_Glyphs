@@ -28,12 +28,9 @@ def replace_nd(fonts, font_nd_index, font_nd):
                         layer = font['.notdef'].layers[master_index]
                         if master.italicAngle == 0:
                                 metrics = (100, 100, 900)
-                                for attrib_i, attrib in enumerate('LSB RSB width'.split()):
-                                        layer.__setattr__(attrib, metrics[attrib_i])
-                        else:
-                                metrics = (-3, -43, 900)
                                 for attrib_i, attrib in enumerate('leftMetricsKey rightMetricsKey widthMetricsKey'.split()):
-                                        layer.__setattr__(attrib, '=={}'.format(metrics[attrib_i]))
+                                        layer.__setattr__(attrib, '={}'.format(metrics[attrib_i]))
+                                break
                 for layer in font['.notdef'].layers:
                         layer.syncMetrics()
                         
