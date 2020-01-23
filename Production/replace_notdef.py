@@ -26,6 +26,7 @@ def replace_nd(fonts, font_nd_index, font_nd):
                         layer.paths = nd_layer.paths
                 
                 for attrib_i, attrib in enumerate('leftMetricsKey rightMetricsKey widthMetricsKey'.split()):
+                        metrics = (100, 100, 900)
                         font['.notdef'].__setattr__(attrib, '={}'.format(metrics[attrib_i]))
                         
                 for layer in font['.notdef'].layers:
