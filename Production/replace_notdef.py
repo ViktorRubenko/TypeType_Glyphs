@@ -11,7 +11,6 @@ def find_nd_font(fonts):
 
 
 def replace_nd(fonts, font_nd_index, font_nd):
-        set_metrics = False
 	if font_nd_index == None:
 		Message('Notdef.glyphs is not opened')
 		return
@@ -25,10 +24,12 @@ def replace_nd(fonts, font_nd_index, font_nd):
                 for master_index, master in enumerate(font.masters):
                         layer = font['.notdef'].layers[master_index]
                         layer.paths = nd_layer.paths
-                        if not set_metrics and master.italicAngle == 0:
-                                for attrib in 'LSB RSB width'.split():
-                                        layer.__setattr__(attrib, nd_layer.__getattribute__(attrib))
-                                set_metrics = True
+                        if master.italicAngle == 0:
+                                metrics = (100, 100, 900)
+                        else:
+                                metrics = (20, 20, 900)
+                        for attrib_i, attrib in enumerate('LSB RSB width'.split()):
+                                layer.__setattr__(attrib, metrics[attrib_i])
 		print('{}: notdef replaced'.format(font.familyName))
 
 def main():
