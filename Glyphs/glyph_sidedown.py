@@ -32,7 +32,11 @@ class OptionsWindow:
         )
 
         self.window.replaceButton = vanilla.Button(
-            (10, 10 + 6 * (h + 5), 85, h), "Replace", callback=self.replace
+            (10, 10 + 6 * (h + 5), 85, h),
+            "Replace",
+            callback=lambda sender: self.replace(
+                sender, suffix=self.window.textSuffix.get()
+            ),
         )
         self.window.duplButton = vanilla.Button(
             (105, 10 + 6 * (h + 5), 85, h), "Duplicate", callback=self.duplicate
@@ -40,11 +44,15 @@ class OptionsWindow:
 
         self.window.open()
 
-    def replace(self, sender):
+    def replace(self, sender, suffix=None, glyphs=None):
+        if not glyphs:
+            glyphs = Glyphs.font.selection
+        if suffix:
+            for glyph in Glyphs.font.selection:
+                glyph.name = "{}.{}".format(glyph.name, suffix)
         try:
             sd = SideDown(
-                glyphs=Glyphs.font.selection,
-                suffix=self.window.textSuffix.get(),
+                glyphs=glyphs,
                 top=int(self.window.textTop.get()),
                 bottom=int(self.window.textBottom.get()),
                 lsb=int(self.window.textLSB.get()),
@@ -65,27 +73,12 @@ class OptionsWindow:
             newGlyph.unicode = None
             Glyphs.font.glyphs.append(newGlyph)
             glyphs.append(Glyphs.font.glyphs[-1])
-            print(glyphs)
-        print(glyphs)
-        try:
-            sd = SideDown(
-                glyphs=glyphs,
-                suffix=None,
-                top=int(self.window.textTop.get()),
-                bottom=int(self.window.textBottom.get()),
-                lsb=int(self.window.textLSB.get()),
-                rsb=int(self.window.textRSB.get()),
-            )
-            sd.execute()
-        except ValueError:
-            print("Invalid Options")
-            Glyphs.showMacroWindow()
+        self.replace(sender, suffix=None, glyphs=glyphs)
 
 
 class SideDown:
     def __init__(self, glyphs, suffix=None, *args, **kwargs):
         self.glyphs = glyphs
-        self.suffix = suffix
         self.rect_values = kwargs
 
     def execute(self):
@@ -111,8 +104,6 @@ class SideDown:
                     path.reverse()
                 layer.removeOverlap()
                 layer.correctPathDirection()
-            if self.suffix:
-                glyph.name = "{}.{}".format(glyph.name, self.suffix)
 
     def add_rect(self, layer):
         top = self.rect_values["top"]
