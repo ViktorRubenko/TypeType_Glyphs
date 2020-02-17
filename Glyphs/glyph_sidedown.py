@@ -84,13 +84,21 @@ class OptionsWindow:
     def duplicate(self, sender):
         glyphs = []
         for glyph in Glyphs.font.selection:
-            newGlyph = glyph.copy()
-            newGlyph.name = "{}.{}".format(
-                glyph.name, self.window.textSuffix.get()
-            )
-            newGlyph.unicode = None
-            Glyphs.font.glyphs.append(newGlyph)
-            glyphs.append(Glyphs.font.glyphs[-1])
+            new_name = "{}.{}".format(glyph.name, self.window.textSuffix.get())
+            if new_name in Glyphs.font.glyphs:
+                d_glyph = Glyphs.font.glyphs[new_name]
+                layer = d_glyph.layers[Glyphs.font.selectedFontMaster.id]
+                layer.clear()
+                layer.paths.extend(
+                    glyph.layers[Glyphs.font.selectedFontMaster.id].paths
+                )
+                glyphs.append(d_glyph)
+            else:
+                newGlyph = glyph.copy()
+                newGlyph.name = new_name
+                newGlyph.unicode = None
+                Glyphs.font.glyphs.append(newGlyph)
+                glyphs.append(Glyphs.font.glyphs[-1])
         self.replace(sender, suffix=None, glyphs=glyphs)
 
 
