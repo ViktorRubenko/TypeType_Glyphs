@@ -4,6 +4,9 @@
 
 from __future__ import division
 import vanilla
+from collections import namedtuple
+
+Rect_ = namedtuple("Rect", "top bottom left right".split())
 
 
 class OptionsWindow:
@@ -81,9 +84,10 @@ class OptionsWindow:
 
 
 class SideDown:
-    def __init__(self, glyphs, suffix=None, *args, **kwargs):
+    def __init__(self, glyphs, *args, **kwargs):
         self.glyphs = glyphs
-        self.rect_values = kwargs
+        self.values = kwargs
+        self.rect = None
 
     def execute(self):
         for glyph in self.glyphs:
@@ -102,6 +106,7 @@ class SideDown:
                 layer.decomposeComponents()
                 layer.removeOverlap()
                 layer.anchors = []
+                self.calc_rect_edges(layer)
                 self.fix_paths(layer)
                 self.add_rect(layer)
                 for path in layer.paths[:-1]:
@@ -110,22 +115,12 @@ class SideDown:
                 layer.correctPathDirection()
 
     def add_rect(self, layer):
-        top = self.rect_values["top"]
-        bottom = self.rect_values["bottom"]
-        x_start = layer.bounds[0]
-        width = layer.bounds[1].width
-        self.rect_values["left"] = left = (
-            x_start.x - layer.LSB + self.rect_values["lsb"]
-        )
-        self.rect_values["right"] = right = (
-            x_start.x + width + layer.RSB - self.rect_values["rsb"]
-        )
         rect = GSPath()
         for point in (
-            (left, bottom),
-            (right, bottom),
-            (right, top),
-            (left, top),
+            (self.rect.left, self.rect.bottom),
+            (self.rect.right, self.rect.bottom),
+            (self.rect.right, self.rect.top),
+            (self.rect.left, self.rect.top),
         ):
             newNode = GSNode()
             newNode.type = GSLINE
@@ -134,23 +129,32 @@ class SideDown:
         rect.closed = True
         layer.paths.append(rect)
 
+    def calc_rect_edges(self, layer):
+        x_start = layer.bounds[0].x
+        width = layer.bounds[1].width
+        left_edge = x_start - layer.LSB + self.values["lsb"]
+        right_edge = x_start + width + layer.RSB - self.values["rsb"]
+        self.rect = Rect_(
+            self.values["top"], self.values["bottom"], left_edge, right_edge
+        )
+
     def fix_paths(self, layer):
         sub_rects = {}
         for alignment, factor in zip("top bottom".split(), (1, -1)):
             rect = GSPath()
             for position in (
-                (layer.bounds[0].x, self.rect_values[alignment]),
+                (layer.bounds[0].x, self.rect.__getattribute__(alignment)),
                 (
                     layer.bounds[0].x + layer.bounds[1].width,
-                    self.rect_values[alignment],
+                    self.rect.__getattribute__(alignment),
                 ),
                 (
                     layer.bounds[0].x + layer.bounds[1].width,
-                    self.rect_values[alignment] + factor * 5000,
+                    self.rect.__getattribute__(alignment) + factor * 5000,
                 ),
                 (
                     layer.bounds[0].x,
-                    self.rect_values[alignment] + factor * 5000,
+                    self.rect.__getattribute__(alignment) + factor * 5000,
                 ),
             ):
                 newNode = GSNode()
