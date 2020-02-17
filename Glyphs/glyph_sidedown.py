@@ -1,6 +1,6 @@
 # MenuTitle: Glyph SideDown
 # -*- coding: utf-8 -*-
-# Version: 0.3 (17 Feb, 2020)
+# Version: 0.4 (17 Feb, 2020)
 
 from __future__ import division
 import vanilla
@@ -49,9 +49,17 @@ class OptionsWindow:
             (105, 10 + 6 * (h + 5), 85, h), "Duplicate", callback=self.duplicate
         )
 
+        self.spinner_window = vanilla.FloatingWindow((200, 200))
+        self.spinner_window.spinner = vanilla.ProgressSpinner(
+            (10, 10, -10, -10), displayWhenStopped=True
+        )
+
         self.window.open()
+        self.spinner_window.open()
+        self.spinner_window.hide()
 
     def replace(self, sender, suffix=None, glyphs=None):
+        self.spinner_window.show()
         if not glyphs:
             glyphs = Glyphs.font.selection
         if suffix:
@@ -70,6 +78,8 @@ class OptionsWindow:
         except ValueError:
             print("Invalid Options")
             Glyphs.showMacroWindow()
+        finally:
+            self.spinner_window.hide()
 
     def duplicate(self, sender):
         glyphs = []
