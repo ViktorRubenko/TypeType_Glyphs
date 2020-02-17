@@ -1,10 +1,11 @@
 # MenuTitle: Glyph SideDown
 # -*- coding: utf-8 -*-
-# Version: 0.4 (17 Feb, 2020)
+# Version: 0.4.1 (17 Feb, 2020)
 
 from __future__ import division
 import vanilla
 from collections import namedtuple
+import copy
 
 Rect_ = namedtuple("Rect", "top bottom left right".split())
 
@@ -87,10 +88,8 @@ class OptionsWindow:
             new_name = "{}.{}".format(glyph.name, self.window.textSuffix.get())
             if new_name in Glyphs.font.glyphs:
                 d_glyph = Glyphs.font.glyphs[new_name]
-                layer = d_glyph.layers[Glyphs.font.selectedFontMaster.id]
-                layer.clear()
-                layer.paths.extend(
-                    glyph.layers[Glyphs.font.selectedFontMaster.id].paths
+                d_glyph.layers[Glyphs.font.selectedFontMaster.id] = copy.copy(
+                    glyph.layers[Glyphs.font.selectedFontMaster.id]
                 )
                 glyphs.append(d_glyph)
             else:
@@ -225,11 +224,7 @@ class SideDown:
 
 def test_cutting():
     sd = SideDown(
-        glyphs=Glyphs.font.selection,
-        top=600,
-        bottom=10,
-        lsb=100,
-        rsb=100,
+        glyphs=Glyphs.font.selection, top=600, bottom=10, lsb=100, rsb=100,
     )
     sd.execute()
 
