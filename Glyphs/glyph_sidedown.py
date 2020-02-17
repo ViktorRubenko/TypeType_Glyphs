@@ -57,6 +57,7 @@ class OptionsWindow:
         if suffix:
             for glyph in Glyphs.font.selection:
                 glyph.name = "{}.{}".format(glyph.name, suffix)
+                glyph.unicode = None
         try:
             sd = SideDown(
                 glyphs=glyphs,
