@@ -164,7 +164,33 @@ class SideDown:
                 rect.nodes.append(newNode)
             rect.closed = True
             sub_rects[alignment] = rect
+
+        for alignment, factor in zip("right left".split(), (1, -1)):
+            rect = GSPath()
+            for position in (
+                (self.rect.__getattribute__(alignment), layer.bounds[0].y,),
+                (
+                    self.rect.__getattribute__(alignment) + factor * 5000,
+                    layer.bounds[0].y,
+                ),
+                (
+                    self.rect.__getattribute__(alignment) + factor * 5000,
+                    layer.bounds[0].y + layer.bounds[1].height,
+                ),
+                (
+                    self.rect.__getattribute__(alignment),
+                    layer.bounds[0].y + layer.bounds[1].height,
+                ),
+            ):
+                newNode = GSNode()
+                newNode.type = GSLINE
+                newNode.position = position
+                rect.nodes.append(newNode)
+                rect.closed = True
+            sub_rects[alignment] = rect
+
         sub_rects["bottom"].reverse()
+        sub_rects["left"].reverse()
 
         GSPathOperator = objc.lookUpClass("GSPathOperator")
         pathOp = GSPathOperator.alloc().init()
