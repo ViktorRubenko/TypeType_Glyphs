@@ -116,22 +116,24 @@ class SideDown:
             ) in "leftMetricsKey rightMetricsKey widthMetricsKey".split():
                 setattr(glyph, attr, None)
             # for all layers in glyph:
+            # 0.5. correct path directions
             # 1. decompose all components
             # 2. remove overlaps
             # 3. remove all anchors
             # 4. add rectangle
             # 5. correct path directions
-            for layer in glyph.layers:
-                layer.decomposeComponents()
-                layer.removeOverlap()
-                layer.anchors = []
-                self.calc_rect_edges(layer)
-                self.fix_paths(layer)
-                self.add_rect(layer)
-                for path in layer.paths[:-1]:
-                    path.reverse()
-                layer.removeOverlap()
-                layer.correctPathDirection()
+            layer = glyph.layers[Glyphs.font.selectedFontMaster.id]
+            layer.decomposeComponents()
+            layer.removeOverlap()
+            layer.anchors = []
+            layer.correctPathDirection()
+            self.calc_rect_edges(layer)
+            self.fix_paths(layer)
+            self.add_rect(layer)
+            for path in layer.paths[:-1]:
+                path.reverse()
+            layer.removeOverlap()
+            layer.correctPathDirection()
 
     def add_rect(self, layer):
         rect = GSPath()
@@ -223,7 +225,11 @@ class SideDown:
 
 def test_cutting():
     sd = SideDown(
-        glyphs=Glyphs.font.selection, top=500, bottom=-190, lsb=100, rsb=100
+        glyphs=Glyphs.font.selection,
+        top=600,
+        bottom=10,
+        lsb=100,
+        rsb=100,
     )
     sd.execute()
 
@@ -231,3 +237,4 @@ def test_cutting():
 if __name__ == "__main__":
     Glyphs.clearLog()
     OptionsWindow(SideDown)
+    # test_cutting()
