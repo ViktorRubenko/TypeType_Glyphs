@@ -203,6 +203,13 @@ class SideDown:
             layer.paths.extend(thePaths)
 
 
+def test_cutting():
+    sd = SideDown(
+        glyphs=Glyphs.font.selection, top=500, bottom=-190, lsb=100, rsb=100
+    )
+    sd.execute()
+
+
 if __name__ == "__main__":
     Glyphs.clearLog()
     OptionsWindow(SideDown)
