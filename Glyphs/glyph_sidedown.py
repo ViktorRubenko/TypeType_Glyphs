@@ -213,8 +213,11 @@ class SideDown:
         for alignment, rect_path in sub_rects.items():
             thePaths = layer.paths[:]
             otherPaths = [rect_path]
-            pathOp = GSPathOperator.alloc().init()
             pathOp.subtractPaths_from_error_(otherPaths, thePaths, None)
+            if len(thePaths) != len(layer.paths):
+                thePaths = layer.paths[:]
+                otherPaths[0].reverse()
+                pathOp.subtractPaths_from_error_(otherPaths, thePaths, None)
             layer.clear()
             layer.paths.extend(thePaths)
 
