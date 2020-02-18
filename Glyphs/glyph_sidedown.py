@@ -109,18 +109,7 @@ class SideDown:
 
     def execute(self):
         for glyph in self.glyphs:
-            # remove metrics formulas
-            for (
-                attr
-            ) in "leftMetricsKey rightMetricsKey widthMetricsKey".split():
-                setattr(glyph, attr, None)
-            # for all layers in glyph:
-            # 0.5. correct path directions
-            # 1. decompose all components
-            # 2. remove overlaps
-            # 3. remove all anchors
-            # 4. add rectangle
-            # 5. correct path directions
+            self.remove_metrics_formulas(glyph)
             layer = glyph.layers[Glyphs.font.selectedFontMaster.id]
             layer.decomposeComponents()
             layer.removeOverlap()
@@ -129,9 +118,7 @@ class SideDown:
             self.calc_rect_edges(layer)
             self.fix_paths(layer)
             self.add_rect(layer)
-            for path in layer.paths[:-1]:
-                path.reverse()
-            layer.removeOverlap()
+            self.remove_overlap(layer)
             layer.correctPathDirection()
 
     def add_rect(self, layer):
@@ -157,6 +144,19 @@ class SideDown:
         self.rect = Rect_(
             self.values["top"], self.values["bottom"], left_edge, right_edge
         )
+
+    @staticmethod
+    def remove_metrics_formulas(glyph):
+        for attr in "leftMetricsKey rightMetricsKey widthMetricsKey".split():
+            setattr(glyph, attr, None)
+
+    def remove_overlap(self, layer):
+        temp_layer = copy.copy(layer)
+        temp_layer.removeOverlap()
+        if len(layer.paths) > len(temp_layer.paths):
+            for path in layer.paths[:-1]:
+                path.reverse()
+        layer.removeOverlap()
 
     def fix_paths(self, layer):
         sub_rects = {}
@@ -207,9 +207,6 @@ class SideDown:
                 rect.nodes.append(newNode)
                 rect.closed = True
             sub_rects[alignment] = rect
-
-        sub_rects["bottom"].reverse()
-        sub_rects["left"].reverse()
 
         GSPathOperator = objc.lookUpClass("GSPathOperator")
         pathOp = GSPathOperator.alloc().init()
