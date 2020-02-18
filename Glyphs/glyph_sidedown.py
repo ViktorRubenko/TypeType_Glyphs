@@ -1,11 +1,11 @@
 # MenuTitle: Glyph SideDown
 # -*- coding: utf-8 -*-
-# Version: 0.4.1 (17 Feb, 2020)
+# Version: 0.4.2 (18 Feb, 2020)
 
 from __future__ import division
-import vanilla
 from collections import namedtuple
 import copy
+import vanilla
 
 Rect_ = namedtuple("Rect", "top bottom left right".split())
 
@@ -60,6 +60,7 @@ class OptionsWindow:
         self.spinner_window.hide()
 
     def replace(self, sender, suffix=None, glyphs=None):
+        self.spinner_window.setPosSize(self.window.getPosSize())
         self.spinner_window.show()
         if not glyphs:
             glyphs = Glyphs.font.selection
@@ -77,8 +78,7 @@ class OptionsWindow:
             )
             sd.execute()
         except ValueError:
-            print("Invalid Options")
-            Glyphs.showMacroWindow()
+            Message(message="Invalid options", title="Error")
         finally:
             self.spinner_window.hide()
 
