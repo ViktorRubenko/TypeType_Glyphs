@@ -1,6 +1,6 @@
 # MenuTitle: Glyph SideDown
 # -*- coding: utf-8 -*-
-# Version: 0.4.2 (18 Feb, 2020)
+# Version: 0.4.3 (21 Feb, 2020)
 
 from __future__ import division
 from collections import namedtuple
@@ -97,7 +97,7 @@ class OptionsWindow:
                 newGlyph.name = new_name
                 newGlyph.unicode = None
                 Glyphs.font.glyphs.append(newGlyph)
-                glyphs.append(Glyphs.font.glyphs[-1])
+                glyphs.append(Glyphs.font[new_name])
         self.replace(sender, suffix=None, glyphs=glyphs)
 
 
