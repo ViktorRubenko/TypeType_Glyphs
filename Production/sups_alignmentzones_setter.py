@@ -14,7 +14,7 @@ def calc_zones(zero, seven):
     seven_size = size(seven)
     zone_bot = GSAlignmentZone(
         seven_size[0],
-        seven_size[0] - zero_size[0] - 1
+        zero_size[0] - seven_size[0] - 1
         if seven_size[0] != zero_size[0]
         else -1,
     )
