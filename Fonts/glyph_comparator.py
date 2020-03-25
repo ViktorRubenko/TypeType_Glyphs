@@ -32,7 +32,6 @@ if __name__ == "__main__":
             {
                 "Type": "Existence by Name",
                 "GlyphName": glyph_name,
-                "Unicode": unicode_,
             }
         )
     for glyph in FONT_1.glyphs:
