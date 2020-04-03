@@ -13,13 +13,14 @@ def get_key(pattern, f_key):
         return ""
 
 
-def add_to_log(thisGlyph, log, attrib):
+def add_to_log(font, thisGlyph, log, attrib):
     keys = {
         "leftMetricsKey": "Left Sidebearing",
         "rightMetricsKey": "Right Sidebearing",
         "widthMetricsKey": "Width",
     }
-    for thisLayer in thisGlyph.layers:
+    for thisMaster in font.masters:
+    	thisLayer = thisGlyph.layers[thisMaster.id]
         attrib_log = log.setdefault(keys[attrib], {})
         glyph_log = attrib_log.setdefault(thisGlyph.name, [])
         glyph_log.append(
@@ -49,12 +50,13 @@ for thisGlyph in font.glyphs:
     passed = False
     for attrib in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
         if sum(
-            0 if not layer.__getattribute__(attrib) else 1
-            for layer in thisGlyph.layers
-        ) != len(thisGlyph.layers):
-            for thisLayer in thisGlyph.layers:
+            0 if not thisGlyph.layers[thisMaster.id].__getattribute__(attrib) else 1
+            for thisMaster in font.masters
+        ) != len(font.masters):
+            for thisMaster in font.masters:
+            	thisLayer = thisGlyph.layers[thisMaster.id]
                 if thisLayer.__getattribute__(attrib):
-                    add_to_log(thisGlyph, log, attrib)
+                    add_to_log(font, thisGlyph, log, attrib)
                     passed = True
                     break
             if passed:
@@ -65,13 +67,14 @@ for thisGlyph in font.glyphs:
         glyph_key = thisGlyph.__getattribute__(attrib)
         if glyph_key:
             main_basis = get_key(r"={0,2}([A-z\|\.]+)", glyph_key)
-            for thisLayer in thisGlyph.layers:
+            for thisMaster in font.masters:
+            	thisLayer = thisGlyph.layers[thisMaster.id]
                 layer_key = thisLayer.__getattribute__(attrib)
                 if not layer_key:
                     continue
                 layer_basis = get_key(r"={0,2}([A-z\|\.]+)", layer_key)
                 if layer_basis != main_basis:
-                    add_to_log(thisGlyph, log, attrib)
+                    add_to_log(font, thisGlyph, log, attrib)
                     break
                     """
 					if newTab:
@@ -82,19 +85,19 @@ for thisGlyph in font.glyphs:
         else:
             main_basis = None
             basisIndex = None
-            for thisLayerIndex, thisLayer in enumerate(thisGlyph.layers):
+            for thisMaster in font.masters:
+            	thisLayer = thisGlyph.layers[thisMaster.id]
                 if thisLayer.__getattribute__(attrib):
                     if not main_basis:
                         main_basis = get_key(
                             r"={0,2}([A-z\|\.]+)",
                             thisLayer.__getattribute__(attrib),
                         )
-                        basisIndex = thisLayerIndex
                         continue
                     layer_key = thisLayer.__getattribute__(attrib)
                     layer_basis = get_key(r"={0,2}([A-z\|\.]+)", layer_key)
                     if layer_basis != main_basis:
-                        add_to_log(thisGlyph, log, attrib)
+                        add_to_log(font, thisGlyph, log, attrib)
                         break
                         """
 						if newTab:
