@@ -63,21 +63,16 @@ def set_master_formula(thisGlyph, thisMasterIndex, attrib):
         delta = oldValue - newValue
         if delta:
             delta = int(increment + delta)
-            if delta:
-                if delta >= 0:
-                    delta = "+" + str(delta)
-                else:
-                    delta = str(delta)
-                if increment:
-                    thisLayer.__setattr__(
-                        attrib, re.sub(r"[+-]?\d+", delta, master_formula)
-                    )
-                else:
-                    thisLayer.__setattr__(attrib, master_formula + delta)
+            if delta >= 0:
+                delta = "+" + str(delta)
             else:
+                delta = str(delta)
+            if increment:
                 thisLayer.__setattr__(
-                    attrib, re.sub(r"[+-]?\d+", "", master_formula)
+                    attrib, re.sub(r"[+-]?\d+", delta, master_formula)
                 )
+            else:
+                thisLayer.__setattr__(attrib, master_formula + delta)
             update_metrics(thisGlyph)
             tLformula = thisLayer.__getattribute__(attrib)
             if tLformula:
