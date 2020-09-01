@@ -35,7 +35,7 @@ def main():
             if (
                 all(
                     component.automaticAlignment
-                    for component in layer.components
+                    for component in thisLayer.components
                 )
                 and not thisLayer.paths
             ):
