@@ -1,6 +1,6 @@
 # MenuTitle: Glyph CopyPaster
 # -*- coding: utf-8 -*-
-# Version: 0.0.1 (04 Mar, 2020)
+# Version: 0.0.2 (01 Sep, 2020)
 
 from os import path
 import copy
@@ -74,6 +74,7 @@ def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False):
             font_paste[glyph_name].layers[
                 font_paste.selectedFontMaster.id
             ] = copied_layer
+            font_paste[glyph_name].note = font_copy[glyph_name].note
         if glyph_name not in font_paste.glyphs:
             print("{} is passed".format(glyph_name))
             continue
