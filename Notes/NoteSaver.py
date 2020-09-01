@@ -85,5 +85,5 @@ if __name__ == "__main__":
     nw.write_json()
     nw.write_to_txt()
     Message(
-        "Filepath: \n{}".format(nw.path_txt), "Notes are saved", OKButton=None
+        u"Filepath: \n{}".format(nw.path_txt), "Notes are saved", OKButton=None
     )
