@@ -18,8 +18,9 @@ class NoteWriter:
         self._load_writed_notes()
 
     def _load_writed_notes(self):
-        with open(self.path_json, "r", encoding="utf-8") as f:
-            self.notes = json.load(f)
+        if os.path.exists(self.path_json):
+            with open(self.path_json, "r", encoding="utf-8") as f:
+                self.notes = json.load(f)
 
     def process_notes(self):
         current_time = datetime.now().strftime("%d-%m-%Y %H:%M%:%S")
