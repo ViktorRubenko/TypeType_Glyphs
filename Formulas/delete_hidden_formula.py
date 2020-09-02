@@ -12,6 +12,7 @@ def main():
     }
     Glyphs.clearLog()
     font = Glyphs.font
+    glyph_names = [glyph.name for glyph in font.glyphs]
 
     font.disableUpdateInterface()
 
@@ -44,7 +45,8 @@ def main():
                     "rightMetricsKey",
                     "widthMetricsKey",
                 ):
-                    if thisGlyph.__getattribute__(attrib):
+                    attrib_value = thisGlyph.__getattribute__(attrib)
+                    if attrib_value and attrib_value not in glyph_names:
                         log.append(
                             "{}: {} {}".format(
                                 thisGlyph.name,
