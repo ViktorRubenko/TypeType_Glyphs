@@ -46,7 +46,12 @@ def main():
                     "widthMetricsKey",
                 ):
                     attrib_value = thisGlyph.__getattribute__(attrib)
-                    if attrib_value and attrib_value not in glyph_names:
+                    if (
+                        attrib_value
+                        and attrib_value.split("=|")[-1].strip()
+                        not in glyph_names
+                    ):
+                        print(attrib_value)
                         log.append(
                             "{}: {} {}".format(
                                 thisGlyph.name,
