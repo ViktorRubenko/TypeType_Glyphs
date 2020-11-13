@@ -1,6 +1,6 @@
 # MenuTitle: Glyph CopyPaster
 # -*- coding: utf-8 -*-
-# Version: 0.0.1 (04 Mar, 2020)
+# Version: 0.0.2 (01 Sep, 2020)
 
 from os import path
 import copy
@@ -17,7 +17,7 @@ OTHER_FONTS = {
 class OptionsWindow:
     def __init__(self):
         self.window = vanilla.FloatingWindow(
-            (300, 400), title="Glyph CopyPaster"
+            (300, 430), title="Glyph CopyPaster"
         )
         h = 20
         self.window.labelFrom = vanilla.TextBox((10, 10, 0, h), "From")
@@ -25,14 +25,17 @@ class OptionsWindow:
             (50, 10, -10, h), OTHER_FONTS, callback=self.fontComboBoxCallback
         )
         self.window.labelPath = vanilla.TextBox((10, 10 + h + 5, -10, h + 20))
+        self.window.allMasters = vanilla.CheckBox(
+            (10, 10 + (h + 5) * 3, -10, h), "To All Masters"
+        )
         self.window.metricsCheck = vanilla.CheckBox(
-            (10, 10 + (h + 5) * 3, -10, h), "Metrics Only"
+            (10, 10 + (h + 5) * 4, -10, h), "Metrics Only"
         )
         self.window.labelList = vanilla.TextBox(
-            (10, 10 + (h + 5) * 4, -10, h), "List of glyphs"
+            (10, 10 + (h + 5) * 5, -10, h), "List of glyphs"
         )
         self.window.glyphsTextEdit = vanilla.TextEditor(
-            (10, 10 + (h + 5) * 5, -10, -40)
+            (10, 10 + (h + 5) * 6, -10, -40)
         )
         self.window.runButton = vanilla.Button(
             (10, -25, 60, -15), "Copy", callback=self.copy
@@ -57,10 +60,11 @@ class OptionsWindow:
                 Glyphs.font,
                 glyphs_list,
                 int(self.window.metricsCheck.get()),
+                int(self.window.allMasters.get()),
             )
 
 
-def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False):
+def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False, to_all_masters=False):
     for glyph_name in glyphs_list:
         if not metrics_only:
             copied_layer = copy.copy(
@@ -71,9 +75,16 @@ def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False):
                 glyph.name = glyph_name
                 glyph.unicode = font_copy[glyph_name].unicode
                 font_paste.glyphs.append(glyph)
-            font_paste[glyph_name].layers[
-                font_paste.selectedFontMaster.id
-            ] = copied_layer
+            if to_all_masters:
+                for fontMaster in font_paste.masters:
+                    font_paste[glyph_name].layers[
+                        fontMaster.id
+                    ] = copied_layer
+            else:
+                font_paste[glyph_name].layers[
+                    font_paste.selectedFontMaster.id
+                ] = copied_layer
+            font_paste[glyph_name].note = font_copy[glyph_name].note
         if glyph_name not in font_paste.glyphs:
             print("{} is passed".format(glyph_name))
             continue
