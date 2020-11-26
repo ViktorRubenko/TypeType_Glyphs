@@ -70,8 +70,10 @@ class Dialog:
 
     def mark_glyphs(self, sender):
         Glyphs.clearLog()
-        ascender = float(self.w.group_ascender.input_ascender.get())
-        descender = float(self.w.group_descender.input_descender.get())
+        ascender = self.w.group_ascender.input_ascender.get()
+        descender = self.w.group_descender.input_descender.get()
+        ascender = float(ascender) if ascender else float("Inf")
+        descender = float(descender) if descender else -float("Inf")
         color = COLORS[self.w.group_color.combo_color.get()]
         font = Glyphs.font
         results = []
@@ -99,7 +101,7 @@ class Dialog:
                 )
             if to_color:
                 glyph.color = color
-        print("\n".join(results))
+        print("\n".join(results) if results else "Nothing overshoots")
         Glyphs.showMacroWindow()
         self.w.close()
 
