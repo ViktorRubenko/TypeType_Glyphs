@@ -1,6 +1,6 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
-# Version: 0.0.2 (19 Mar, 2021)
+# Version: 0.0.1 (19 Mar, 2021)
 
 import vanilla
 
@@ -61,11 +61,13 @@ class Dialog:
         self.w.open()
 
     def checkCurrentMaster(self, sender):
+        global ALL_MASTERS
         if sender.get():
             self.w.checkAllMasters.set(False)
             ALL_MASTERS = False
 
     def checkAllMasters(self, sender):
+        global ALL_MASTERS
         if sender.get():
             self.w.checkCurrentMaster.set(False)
             ALL_MASTERS = True
@@ -144,7 +146,8 @@ def tab_spacing(glyph_list):
                 )
             else:
                 print(
-                    "'{}' -> '{}': W {}->[{}{}]->{}: L:{}->{}, R:{}->{}".format(
+                    "[{}] '{}' -> '{}': W {}->[{}{}]->{}: L:{}->{}, R:{}->{}".format(
+                        font_master.name,
                         parent_glyph_name,
                         glyph.name,
                         parent_layer.width,
