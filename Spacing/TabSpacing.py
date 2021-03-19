@@ -1,11 +1,12 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
-# Version: 0.0.1 (19 Mar, 2021)
+# Version: 0.0.2 (19 Mar, 2021)
 
 import vanilla
 
 
 FONT = Glyphs.font
+ALL_MASTERS = False
 
 
 REPLACERS = {"tosf": "osf", ".tab": "", ".tf": "", ".tf.": ".", ".tab.": "."}
@@ -14,21 +15,21 @@ REPLACERS = {"tosf": "osf", ".tab": "", ".tf": "", ".tf.": ".", ".tab.": "."}
 class Dialog:
     def __init__(self):
         self.w = vanilla.FloatingWindow((350, 400), "Tab Spacing")
-        self.w.checkGroup = vanilla.Group((10, 30, -10, -10))
-        self.w.checkGroup.checkSelected = vanilla.CheckBox(
-            (10, 10, -10, 20),
+        self.w.label = vanilla.TextBox((20, 10, -10, 20), "Glyphs:")
+        self.w.checkSelected = vanilla.CheckBox(
+            (20, 30, -10, 20),
             "Selected Glyphs",
             callback=self.checkSelected,
             value=True,
         )
-        self.w.checkGroup.checkTF = vanilla.CheckBox(
-            (10, 30, -10, 20), "All .tf", callback=self.checkTF, value=False
+        self.w.checkTF = vanilla.CheckBox(
+            (20, 50, -10, 20), "All .tf", callback=self.checkTF, value=False
         )
-        self.w.checkGroup.checkTOSF = vanilla.CheckBox(
-            (10, 50, -10, 20), "All .tosf", callback=self.checkTOSF, value=False
+        self.w.checkTOSF = vanilla.CheckBox(
+            (20, 70, -10, 20), "All .tosf", callback=self.checkTOSF, value=False
         )
-        self.w.checkGroup.runButton = vanilla.Button(
-            (10, -50, 100, -10), "Run", callback=self.run
+        self.w.runButton = vanilla.Button(
+            (20, -60, 100, -20), "Run", callback=self.run
         )
         self.w.listLabel = vanilla.TextBox(
             (150, 10, -10, -10), "Glyphs to process:"
@@ -43,7 +44,31 @@ class Dialog:
             "Remove Selection",
             callback=self.removeFromList,
         )
+        self.w.mastersLabel = vanilla.TextBox((20, 150, -10, 20), "Masters:")
+        self.w.checkCurrentMaster = vanilla.CheckBox(
+            (20, 170, -10, 20),
+            "Current Master",
+            value=True,
+            callback=self.checkCurrentMaster,
+        )
+        self.w.checkAllMasters = vanilla.CheckBox(
+            (20, 190, -10, 20),
+            "All Masters",
+            value=False,
+            callback=self.checkAllMasters,
+        )
+
         self.w.open()
+
+    def checkCurrentMaster(self, sender):
+        if sender.get():
+            self.w.checkAllMasters.set(False)
+            ALL_MASTERS = False
+
+    def checkAllMasters(self, sender):
+        if sender.get():
+            self.w.checkCurrentMaster.set(False)
+            ALL_MASTERS = True
 
     def removeFromList(self, sender):
         for index in self.w.glyphList.getSelection()[::-1]:
@@ -90,6 +115,10 @@ d = Dialog()
 def tab_spacing(glyph_list):
     Glyphs.clearLog()
     warnings = []
+    if ALL_MASTERS:
+        font_masters = FONT.masters
+    else:
+        font_masters = [FONT.selectedFontMaster]
     for glyph in glyph_list:
         for ext in sorted(REPLACERS.keys(), key=lambda k: -len(k)):
             if ext in glyph.name:
@@ -99,7 +128,7 @@ def tab_spacing(glyph_list):
             print("Couldn't find parent glyph for '{}'".format(glyph.name))
             continue
         parent_glyph = FONT[parent_glyph_name]
-        for font_master in FONT.masters:
+        for font_master in font_masters:
             layer = glyph.layers[font_master.id]
             parent_layer = parent_glyph.layers[font_master.id]
             width_diff = layer.width - parent_layer.width
