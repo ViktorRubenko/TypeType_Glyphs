@@ -1,6 +1,6 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
-# Version: 0.0.1 (19 Mar, 2021)
+# Version: 0.0.2 (22 Mar, 2021)
 
 import vanilla
 
@@ -111,7 +111,11 @@ class Dialog:
         Glyphs.showMacroWindow()
 
 
-d = Dialog()
+def move_glyph(layer, sb_diff):
+    delta = (-1, 1) if sb_diff < 0 else (1, -1)
+    print(layer.LSB, layer.RSB)
+    while abs(layer.LSB - layer.RSB - sb_diff) > 1:
+        layer.applyTransform([1.0, 0, 0, 1.0, delta[0], delta[1]])
 
 
 def tab_spacing(glyph_list):
@@ -133,31 +137,39 @@ def tab_spacing(glyph_list):
         for font_master in font_masters:
             layer = glyph.layers[font_master.id]
             parent_layer = parent_glyph.layers[font_master.id]
-            width_diff = layer.width - parent_layer.width
+            sb_diff = parent_layer.LSB - parent_layer.RSB
+            if abs(layer.LSB - layer.RSB - sb_diff) < 2:
+                print(
+                    "[{}] '{}' and '{}' have equal sb difference {}".format(
+                        font_master.name, parent_glyph_name, glyph.name, sb_diff
+                    )
+                )
+                continue
             old_width, old_lsb, old_rsb = layer.width, layer.LSB, layer.RSB
-            layer.LSB = parent_layer.LSB + round(width_diff / 2.0)
-            layer.RSB = parent_layer.RSB + int(width_diff / 2.0)
+            move_glyph(layer, sb_diff)
             if layer.width != old_width:
                 layer.LSB, layer.RSB = old_lsb, old_rsb
                 warnings.append(
-                    "{}: widths with old and new sb are not equal -> old values restored".format(
-                        glyph.name
+                    "[{}] '{}': widths with old and new sb are not equal -> old values restored".format(
+                        font_master.name, glyph.name
                     )
                 )
             else:
                 print(
-                    "[{}] '{}' -> '{}': W {}->[{}{}]->{}: L:{}->{}, R:{}->{}".format(
+                    "[{}] '{}' -> '{}': Parent SB difference: {} => Child L:{}->{}, R:{}->{}, SB difference: {}".format(
                         font_master.name,
                         parent_glyph_name,
                         glyph.name,
-                        parent_layer.width,
-                        "+" if width_diff > 0 else "-",
-                        width_diff,
-                        layer.width,
-                        parent_layer.LSB,
+                        sb_diff,
+                        old_lsb,
                         layer.LSB,
-                        parent_layer.RSB,
+                        old_rsb,
                         layer.RSB,
+                        layer.LSB - layer.RSB,
                     )
                 )
         print("\n".join(warnings))
+
+
+if __name__ == "__main__":
+    d = Dialog()
