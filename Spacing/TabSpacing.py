@@ -1,6 +1,6 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
-# Version: 0.0.2 (22 Mar, 2021)
+# Version: 0.0.3 (22 Mar, 2021)
 
 import vanilla
 
@@ -19,14 +19,20 @@ class Dialog:
         self.w.checkSelected = vanilla.CheckBox(
             (20, 30, -10, 20),
             "Selected Glyphs",
-            callback=self.checkSelected,
+            callback=self.updateGlyphList,
             value=True,
         )
         self.w.checkTF = vanilla.CheckBox(
-            (20, 50, -10, 20), "All .tf", callback=self.checkTF, value=False
+            (20, 50, -10, 20),
+            "All .tf",
+            callback=self.updateGlyphList,
+            value=False,
         )
         self.w.checkTOSF = vanilla.CheckBox(
-            (20, 70, -10, 20), "All .tosf", callback=self.checkTOSF, value=False
+            (20, 70, -10, 20),
+            "All .tosf",
+            callback=self.updateGlyphList,
+            value=False,
         )
         self.w.runButton = vanilla.Button(
             (20, -60, 100, -20), "Run", callback=self.run
@@ -73,49 +79,49 @@ class Dialog:
             ALL_MASTERS = True
 
     def removeFromList(self, sender):
-        for index in self.w.glyphList.getSelection()[::-1]:
-            self.w.glyphList.remove(self.w.glyphList[index])
+        self.w.glyphList._removeSelection()
 
-    def checkSelected(self, sender):
+    def updateGlyphList(self, sender):
         selected_glyphs = [g.name for g in FONT.glyphs if g.selected]
-        for glyph_name in selected_glyphs:
-            if glyph_name in self.w.glyphList:
-                self.w.glyphList.remove(glyph_name)
-        if sender.get():
-            self.w.glyphList.extend(selected_glyphs)
-
-    def checkTF(self, sender):
         tf_glyphs = [g.name for g in FONT.glyphs if ".tf" in g.name]
-        if sender.get():
-            for glyph_name in tf_glyphs:
-                if glyph_name in self.w.glyphList:
-                    self.w.glyphList.remove(glyph_name)
-            self.w.glyphList.extend(tf_glyphs)
-        else:
-            for glyph_name in tf_glyphs:
-                self.w.glyphList.remove(glyph_name)
+        tosf_glyphs = [g.name for g in FONT.glyphs if ".tosf" in g.name]
 
-    def checkTOSF(self, sender):
-        tf_glyphs = [g.name for g in FONT.glyphs if ".tosf" in g.name]
-        if sender.get():
-            for glyph_name in tf_glyphs:
-                if glyph_name in self.w.glyphList:
-                    self.w.glyphList.remove(glyph_name)
-            self.w.glyphList.extend(tf_glyphs)
-        else:
-            for glyph_name in tf_glyphs:
-                self.w.glyphList.remove(glyph_name)
+        for i in range(len(self.w.glyphList))[::-1]:
+            del self.w.glyphList[i]
+
+        for glyph_name in self.w.glyphList:
+            self.w.glyphList.remove(glyph_name)
+
+        if self.w.checkSelected.get():
+            self.append_glyphs(selected_glyphs)
+
+        if self.w.checkTF.get():
+            self.append_glyphs(tf_glyphs)
+
+        if self.w.checkTOSF.get():
+            self.append_glyphs(tosf_glyphs)
+
+    def append_glyphs(self, glyph_list):
+        for glyph_name in glyph_list:
+            if glyph_name in self.w.glyphList:
+                continue
+            self.w.glyphList.append(glyph_name)
 
     def run(self, sender):
         tab_spacing([FONT[g_name] for g_name in self.w.glyphList.get()])
         Glyphs.showMacroWindow()
 
 
-def move_glyph(layer, sb_diff):
-    delta = (-1, 1) if sb_diff < 0 else (1, -1)
-    print(layer.LSB, layer.RSB)
+def move_glyph(layer, sb_diff, delta_x=None, final=False):
+    delta_x = 1
+    k = 0
+    init_sb_diff = abs(layer.LSB - layer.RSB - sb_diff)
     while abs(layer.LSB - layer.RSB - sb_diff) > 1:
-        layer.applyTransform([1.0, 0, 0, 1.0, delta[0], delta[1]])
+        layer.applyTransform([1.0, 0, 0, 1.0, delta_x, 0])
+        if abs(layer.LSB - layer.RSB - sb_diff) > init_sb_diff:
+            delta_x = -delta_x
+        if k == 100:
+            print("error", layer)
 
 
 def tab_spacing(glyph_list):
@@ -168,7 +174,7 @@ def tab_spacing(glyph_list):
                         layer.LSB - layer.RSB,
                     )
                 )
-        print("\n".join(warnings))
+    print("\n".join(warnings))
 
 
 if __name__ == "__main__":
