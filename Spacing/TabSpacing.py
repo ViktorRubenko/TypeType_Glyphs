@@ -1,6 +1,6 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
-# Version: 0.0.3 (22 Mar, 2021)
+# Version: 0.0.4 (23 Mar, 2021)
 
 import vanilla
 
@@ -140,6 +140,13 @@ def tab_spacing(glyph_list):
             print("Couldn't find parent glyph for '{}'".format(glyph.name))
             continue
         parent_glyph = FONT[parent_glyph_name]
+        if parent_glyph is None:
+            warnings.append(
+                    "'{}': could't find parent '{}'".format(
+                        glyph.name, parent_glyph_name
+                    )
+                )
+            continue
         for font_master in font_masters:
             layer = glyph.layers[font_master.id]
             parent_layer = parent_glyph.layers[font_master.id]
