@@ -77,12 +77,18 @@ class Dialog:
         if sender.get():
             self.w.checkAllMasters.set(False)
             ALL_MASTERS = False
+        else:
+            self.w.checkAllMasters.set(True)
+            ALL_MASTERS = True
 
     def checkAllMasters(self, sender):
         global ALL_MASTERS
         if sender.get():
             self.w.checkCurrentMaster.set(False)
             ALL_MASTERS = True
+        else:
+            self.w.checkCurrentMaster.set(True)
+            ALL_MASTERS = False
 
     def removeFromList(self, sender):
         self.w.glyphList._removeSelection()
