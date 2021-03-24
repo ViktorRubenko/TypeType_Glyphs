@@ -1,6 +1,6 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
-# Version: 0.0.4 (23 Mar, 2021)
+# Version: 0.0.5 (25 Mar, 2021)
 
 import vanilla
 
@@ -14,7 +14,7 @@ REPLACERS = {"tosf": "osf", ".tab": "", ".tf": "", ".tf.": ".", ".tab.": "."}
 
 class Dialog:
     def __init__(self):
-        self.w = vanilla.FloatingWindow((350, 400), "Tab Spacing")
+        self.w = vanilla.FloatingWindow((370, 400), "Tab Spacing")
         self.w.label = vanilla.TextBox((20, 10, -10, 20), "Glyphs:")
         self.w.checkSelected = vanilla.CheckBox(
             (20, 30, -10, 20),
@@ -42,7 +42,7 @@ class Dialog:
         )
         self.w.glyphList = vanilla.List(
             (150, 30, -20, -80),
-            [g.name for g in FONT.glyphs if g.selected],
+            [g.name for g in FONT.glyphs if g.selected] if FONT else [],
             selectionCallback=None,
         )
         self.w.removeButton = vanilla.Button(
@@ -63,6 +63,12 @@ class Dialog:
             value=False,
             callback=self.checkAllMasters,
         )
+        self.w.updateFontButton = vanilla.Button(
+            (-100, 10, 80, 15),
+            "updateFont",
+            sizeStyle="small",
+            callback=self.updateFont,
+        )
 
         self.w.open()
 
@@ -82,9 +88,9 @@ class Dialog:
         self.w.glyphList._removeSelection()
 
     def updateGlyphList(self, sender):
-        selected_glyphs = [g.name for g in FONT.glyphs if g.selected]
-        tf_glyphs = [g.name for g in FONT.glyphs if ".tf" in g.name]
-        tosf_glyphs = [g.name for g in FONT.glyphs if ".tosf" in g.name]
+        selected_glyphs = [g.name for g in FONT.glyphs if g.selected] if FONT else []
+        tf_glyphs = [g.name for g in FONT.glyphs if ".tf" in g.name] if FONT else []
+        tosf_glyphs = [g.name for g in FONT.glyphs if ".tosf" in g.name] if FONT else []
 
         for i in range(len(self.w.glyphList))[::-1]:
             del self.w.glyphList[i]
@@ -101,6 +107,11 @@ class Dialog:
         if self.w.checkTOSF.get():
             self.append_glyphs(tosf_glyphs)
 
+    def updateFont(self, sender):
+        global FONT
+        FONT = Glyphs.font
+        self.updateGlyphList(None)
+
     def append_glyphs(self, glyph_list):
         for glyph_name in glyph_list:
             if glyph_name in self.w.glyphList:
@@ -108,8 +119,9 @@ class Dialog:
             self.w.glyphList.append(glyph_name)
 
     def run(self, sender):
-        tab_spacing([FONT[g_name] for g_name in self.w.glyphList.get()])
-        Glyphs.showMacroWindow()
+        if FONT:
+            tab_spacing([FONT[g_name] for g_name in self.w.glyphList.get()])
+            Glyphs.showMacroWindow()
 
 
 def move_glyph(layer, sb_diff, delta_x=None, final=False):
