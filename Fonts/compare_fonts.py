@@ -99,7 +99,7 @@ class CompareWindow():
                     })
             else:
                 print("ERROR", glyph1.name)
-        print(rows)
+        self.w.result_sheet.set(rows)
         
     def compare_glyphs(self, g1_layer, g2_layer):
         cmp_result = []
@@ -128,50 +128,43 @@ class CompareWindow():
             g2_layer.LSB, g2_layer.RSB, g2_layer.width,
         ]
 
-        if components1 and components2:
-            if len(components1) != len(components2):
-                cmp_result.append("Amount")
-            else:
-                if Counter(components1) == Counter(components2):
-                    if components1 != components2:
-                        cmp_result.append("Order")
-                    else:
-                        if [c.transform for c in g1_layer.components] != [c.transform for c in g2_layer.components]:
-                            cmp_result.append("Transform")
+        if len(components1) != len(components2):
+            cmp_result.append("Amount")
+        else:
+            if Counter(components1) == Counter(components2):
+                if components1 != components2:
+                    cmp_result.append("Order")
                 else:
-                    cmp_result.append("ParentGlyph")
-        elif components1 and not components2 or components2 and not components1:
-            cmp_result.append("Non component")
+                    if [c.transform for c in g1_layer.components] != [c.transform for c in g2_layer.components]:
+                        cmp_result.append("Transform")
+            else:
+                cmp_result.append("ParentGlyph")
 
-        if points1 and points2:
-            if len(g1_layer.paths) != len(g2_layer.paths):
-                path_result.append("Amount of contours")
+        if len(g1_layer.paths) != len(g2_layer.paths):
+            path_result.append("Amount of contours")
+        else:
+            if len(points1) != len(points2):
+                path_result.append("Amount of points")
+            elif points1 != points2:
+                path_result.append("Points type")
             else:
-                if len(points1) != len(points2):
-                    path_result.append("Amount of points")
-                elif points1 != points2:
-                    path_result.append("Points type")
-                else:
-                    path_loop = True
-                    for p1_index, p1 in enumerate(g1_layer.paths):
-                        if not path_loop:
+                path_loop = True
+                for p1_index, p1 in enumerate(g1_layer.paths):
+                    if not path_loop:
+                        break
+                    p2 = g2_layer.paths[p1_index]
+                    for n1_index, n1 in enumerate(p1.nodes):
+                        n2 = p2.nodes[n1_index]
+                        if n1.position != n2.position:
+                            path_result.append("Node position")
+                            path_loop = False
                             break
-                        p2 = g2_layer.paths[p1_index]
-                        for n1_index, n1 in enumerate(p1.nodes):
-                            n2 = p2.nodes[n1_index]
-                            if n1.position != n2.position:
-                                path_result.append("Node position")
-                                path_loop = False
-                                break
-        elif points1 and not points2 or points2 and not points1:
-            path_result.append("Non contour")
 
-        if anchors1 and anchors2:
-            if len(anchors1) != len(anchors2):
-                anch_result.append("Amount")
-            else:
-                if anchors1 != anchors2:
-                    anch_result.append("Position")
+        if len(anchors1) != len(anchors2):
+            anch_result.append("Amount")
+        else:
+            if anchors1 != anchors2:
+                anch_result.append("Position")
 
         if formulas1 != formulas2:
             sb_result.append("Formulas")
