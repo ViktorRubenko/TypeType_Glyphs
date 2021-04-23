@@ -34,15 +34,8 @@ class CompareWindow():
         self.w.selection_group.font2_masters = PopUpButton(
             (-10-int(self.size[0] * 0.48), 31, -10, 21),
             [],
-            callback=None,
+            callback=self.find_difference,
         )
-
-        self.w.selection_group.font1.set(0)
-        self.w.selection_group.font1.set(1)
-
-        self.set_masters_one(self.w.selection_group.font1)
-        self.set_masters_two(self.w.selection_group.font2)
-
 
         self.w.result_sheet = List(
             (0, 60, -0, -50),
@@ -56,6 +49,11 @@ class CompareWindow():
             ],
         )
 
+        self.w.selection_group.font1.set(0)
+        self.w.selection_group.font1.set(1)
+
+        self.set_masters_one(self.w.selection_group.font1)
+        self.set_masters_two(self.w.selection_group.font2)
 
         self.w.center()
         self.w.open()
@@ -66,12 +64,14 @@ class CompareWindow():
         self.w.selection_group.font1_masters.setItems(
             [i.name for i in font.masters]
         )
+        self.find_difference(None)
 
     def set_masters_two(self, sender):
         font = self.fonts[sender.get()]
         self.w.selection_group.font2_masters.setItems(
             [i.name for i in font.masters]
         )
+        self.find_difference(None)
 
     def find_difference(self, sender):
         rows = []
