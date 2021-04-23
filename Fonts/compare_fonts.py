@@ -5,6 +5,7 @@
 from vanilla import *
 from AppKit import NSScreen
 import os
+import csv
 from collections import Counter
 
 
@@ -45,8 +46,14 @@ class CompareWindow():
                 {"title": "Path"},
                 {"title": "Components"},
                 {"title": "Anchors"},
-                {"title": "SB"},
+                {"title": "Metrics"},
             ],
+        )
+
+        self.w.exportButton = Button(
+            (int(self.size[0] * 0.45), -40, -int(self.size[0] * 0.45), -15), 
+            "Export",
+            callback=self.export_csv,
         )
 
         self.w.selection_group.font1.set(0)
@@ -55,9 +62,34 @@ class CompareWindow():
         self.set_masters_one(self.w.selection_group.font1)
         self.set_masters_two(self.w.selection_group.font2)
 
+
         self.w.center()
         self.w.open()
 
+    def export_csv(self, sender):
+        export_path = GetSaveFile(
+            ProposedFileName="{}_{}".format(
+                self.font_names[self.w.selection_group.font1.get()], 
+                self.font_names[self.w.selection_group.font2.get()],
+            ),
+            filetypes=['txt']
+        )
+        fieldnames = "Glyph Path Components Anchors Metrics".split()
+        if export_path:
+            with open(export_path, 'w') as f:
+                f.write(
+                    unicode('{0:^20s}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n'.format(
+                        *fieldnames
+                    ), 'utf-8')
+                )
+                f.write(unicode("{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"))
+                for row in self.w.result_sheet.get():
+                    f.write(
+                        unicode('{0:<20}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n'.format(
+                            row["Glyph"], row["Path"], row["Components"], row["Anchors"], row["Metrics"],
+                        ), 'utf-8')
+                    )
+                    f.write(unicode("{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"))
 
     def set_masters_one(self, sender):
         font = self.fonts[sender.get()]
@@ -95,7 +127,7 @@ class CompareWindow():
                         "Path": ",".join(result[0]),
                         "Components": ",".join(result[1]),
                         "Anchors": ",".join(result[2]),
-                        "SB": ",".join(result[3]),
+                        "Metrics": ",".join(result[3]),
                     })
             else:
                 print("ERROR", glyph1.name)
@@ -105,7 +137,7 @@ class CompareWindow():
         cmp_result = []
         path_result = []
         anch_result = []
-        sb_result = []
+        metrics_result = []
 
         points1 = [n.type for p in g1_layer.paths for n in p.nodes]
         points2 = [n.type for p in g2_layer.paths for n in p.nodes]
@@ -121,10 +153,10 @@ class CompareWindow():
             g2_layer.leftMetricsKey, g2_layer.rightMetricsKey, g2_layer.widthMetricsKey,
             g2_layer.parent.leftMetricsKey, g2_layer.parent.rightMetricsKey, g2_layer.parent.widthMetricsKey,
         ]
-        sb_values1 = [
+        metrics_values1 = [
             g1_layer.LSB, g1_layer.RSB, g1_layer.width,
         ]
-        sb_values2 = [
+        metrics_values2 = [
             g2_layer.LSB, g2_layer.RSB, g2_layer.width,
         ]
 
@@ -167,11 +199,11 @@ class CompareWindow():
                 anch_result.append("Position")
 
         if formulas1 != formulas2:
-            sb_result.append("Formulas")
-        if sb_values1 != sb_values2:
-            sb_result.append("Values")
+            metrics_result.append("Formulas")
+        if metrics_values1 != metrics_values2:
+            metrics_result.append("Values")
 
-        return path_result, cmp_result, anch_result, sb_result
+        return path_result, cmp_result, anch_result, metrics_result
 
 
     @staticmethod
