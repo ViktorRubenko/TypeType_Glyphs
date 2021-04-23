@@ -11,7 +11,7 @@ from collections import Counter
 class CompareWindow():
     def __init__(self):
         self.fonts = Glyphs.fonts
-        self.font_names = [os.path.basename(font.filepath) for font in Glyphs.fonts]
+        self.font_names = [os.path.basename(font.filepath) if font.filepath else font.familyName for font in Glyphs.fonts]
         self.size = self._size_from_screen()
         self.w = Window(self.size, "Compare Fonts")
         
