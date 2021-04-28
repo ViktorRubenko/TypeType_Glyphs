@@ -1,6 +1,9 @@
 # MenuTitle: Show glyphs with different formula logic
 # -*- coding: utf-8 -*-
 # Version: 0.1.4 (23 Mar, 2020)
+__doc__ = """
+Outputs a list of glyphs where the formula logic differs between the masters
+"""
 
 
 import re

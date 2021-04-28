@@ -1,7 +1,9 @@
 # MenuTitle: Formula values unification
 # -*- coding: utf-8 -*-
 # Version: 0.3.4 (23 Mar, 2020)
-
+__doc__ = """
+Brings all formulas in all masters to the logic of the open master
+""
 
 import re
 

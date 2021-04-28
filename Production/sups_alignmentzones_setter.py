@@ -1,6 +1,10 @@
 # MenuTitle: Sups AlignmentZones Setter
 # -*- coding: utf-8 -*-
 # Version: 0.0.1 (19 Mar, 2020)
+__doc__ = """
+Adds alignment zones for superiors to Font Info - Masters
+"""
+
 
 from vanilla import *
 

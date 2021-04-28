@@ -1,6 +1,13 @@
 # MenuTitle: Glyph CopyPaster
 # -*- coding: utf-8 -*-
 # Version: 0.0.3 (26 Mar, 2021)
+__doc__ = """
+Copies glyphs from one font to another. Works with currently open fonts. 
+To copy, you must write glyph names space separated in the input field. 
+To all masters: copies the same glyph variant to all the masters. 
+Metrics only: !not tested!, the function is similar to that of Steal Metrics
+"""
+
 
 from os import path
 import copy
@@ -64,7 +71,13 @@ class OptionsWindow:
             )
 
 
-def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False, to_all_masters=False):
+def glyph_copy_paste(
+    font_copy,
+    font_paste,
+    glyphs_list,
+    metrics_only=False,
+    to_all_masters=False,
+):
     glyphs_font_copy = [g.name for g in font_copy.glyphs]
     for glyph_name in glyphs_list:
         if glyph_name not in font_copy.glyphs:
@@ -81,9 +94,7 @@ def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False, to_
                 font_paste.glyphs.append(glyph)
             if to_all_masters:
                 for fontMaster in font_paste.masters:
-                    font_paste[glyph_name].layers[
-                        fontMaster.id
-                    ] = copied_layer
+                    font_paste[glyph_name].layers[fontMaster.id] = copied_layer
             else:
                 font_paste[glyph_name].layers[
                     font_paste.selectedFontMaster.id
@@ -98,7 +109,9 @@ def glyph_copy_paste(font_copy, font_paste, glyphs_list, metrics_only=False, to_
             copy_value = getattr(font_copy[glyph_name], metric_attr)
             if copy_value:
                 setattr(
-                    font_paste[glyph_name], metric_attr, copy_value,
+                    font_paste[glyph_name],
+                    metric_attr,
+                    copy_value,
                 )
             for layer in font_paste[glyph_name].layers:
                 layer.syncMetrics()

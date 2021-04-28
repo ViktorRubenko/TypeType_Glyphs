@@ -1,6 +1,9 @@
 # MenuTitle: Fix Serif
 # -*- coding: utf-8 -*-
 # Version: 0.1 (09 Apr, 2020)
+__doc__ = """
+Description in the file Ramillas_serifs in smallcaps
+"""
 
 
 import vanilla
@@ -15,12 +18,17 @@ SERIF_GLYPHS = {
 class OptionsWindow:
     def __init__(self):
         self.window = vanilla.FloatingWindow((200, 120), title="Fix Serif")
-        self.window.label = vanilla.TextBox((10, 10, -0, 20), "Reference Serif")
+        self.window.label = vanilla.TextBox(
+            (10, 10, -0, 20), "Reference Serif"
+        )
         self.window.serifCombo = vanilla.ComboBox(
-            (10, 35, -10, 20), list(SERIF_GLYPHS.keys()),
+            (10, 35, -10, 20),
+            list(SERIF_GLYPHS.keys()),
         )
         self.window.runButton = vanilla.Button(
-            (10, -50, 40, 30), "Run", callback=self.run,
+            (10, -50, 40, 30),
+            "Run",
+            callback=self.run,
         )
 
         self.window.open()

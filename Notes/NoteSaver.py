@@ -1,6 +1,11 @@
 # MenuTitle: NoteSaver
 # -*- coding: utf-8 -*-
 # Version: 0.0.1 (1 Sep, 2020)
+__doc__ = """
+Uploads all comments from Glyph Note to a txt file. 
+Sets the current date for the comments.
+"""
+
 
 import os
 from io import open

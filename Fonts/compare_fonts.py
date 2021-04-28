@@ -1,5 +1,8 @@
 # MenuTitle: Compare Fonts
 # -*- coding: utf-8 -*-
+__doc__ = """
+Compares two fonts: contours, components, anchors, metrics
+"""
 
 
 from vanilla import *
@@ -9,18 +12,23 @@ import csv
 from collections import Counter
 
 
-class CompareWindow():
+class CompareWindow:
     def __init__(self):
         self.fonts = Glyphs.fonts
-        self.font_names = [os.path.basename(font.filepath) if font.filepath else font.familyName for font in Glyphs.fonts]
+        self.font_names = [
+            os.path.basename(font.filepath)
+            if font.filepath
+            else font.familyName
+            for font in Glyphs.fonts
+        ]
         self.size = self._size_from_screen()
         self.w = Window(self.size, "Compare Fonts")
-        
+
         self.w.selection_group = Group((0, 0, -0, 55))
         self.w.selection_group.font1 = PopUpButton(
             (10, 5, int(self.size[0] * 0.48), 21),
             self.font_names,
-            callback=self.set_masters_one
+            callback=self.set_masters_one,
         )
         self.w.selection_group.font1_masters = PopUpButton(
             (10, 31, int(self.size[0] * 0.48), 21),
@@ -28,12 +36,12 @@ class CompareWindow():
             callback=self.find_difference,
         )
         self.w.selection_group.font2 = PopUpButton(
-            (-10-int(self.size[0] * 0.48), 5, -10, 21),
+            (-10 - int(self.size[0] * 0.48), 5, -10, 21),
             self.font_names,
-            callback=self.set_masters_two
+            callback=self.set_masters_two,
         )
         self.w.selection_group.font2_masters = PopUpButton(
-            (-10-int(self.size[0] * 0.48), 31, -10, 21),
+            (-10 - int(self.size[0] * 0.48), 31, -10, 21),
             [],
             callback=self.find_difference,
         )
@@ -51,7 +59,7 @@ class CompareWindow():
         )
 
         self.w.exportButton = Button(
-            (int(self.size[0] * 0.45), -40, -int(self.size[0] * 0.45), -15), 
+            (int(self.size[0] * 0.45), -40, -int(self.size[0] * 0.45), -15),
             "Export",
             callback=self.export_csv,
         )
@@ -62,34 +70,49 @@ class CompareWindow():
         self.set_masters_one(self.w.selection_group.font1)
         self.set_masters_two(self.w.selection_group.font2)
 
-
         self.w.center()
         self.w.open()
 
     def export_csv(self, sender):
         export_path = GetSaveFile(
             ProposedFileName="{}_{}".format(
-                self.font_names[self.w.selection_group.font1.get()], 
+                self.font_names[self.w.selection_group.font1.get()],
                 self.font_names[self.w.selection_group.font2.get()],
             ),
-            filetypes=['txt']
+            filetypes=["txt"],
         )
         fieldnames = "Glyph Path Components Anchors Metrics".split()
         if export_path:
-            with open(export_path, 'w') as f:
+            with open(export_path, "w") as f:
                 f.write(
-                    unicode('{0:^20s}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n'.format(
-                        *fieldnames
-                    ), 'utf-8')
+                    unicode(
+                        "{0:^20s}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n".format(
+                            *fieldnames
+                        ),
+                        "utf-8",
+                    )
                 )
-                f.write(unicode("{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"))
+                f.write(
+                    unicode("{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8")
+                )
                 for row in self.w.result_sheet.get():
                     f.write(
-                        unicode('{0:<20}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n'.format(
-                            row["Glyph"], row["Path"], row["Components"], row["Anchors"], row["Metrics"],
-                        ), 'utf-8')
+                        unicode(
+                            "{0:<20}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n".format(
+                                row["Glyph"],
+                                row["Path"],
+                                row["Components"],
+                                row["Anchors"],
+                                row["Metrics"],
+                            ),
+                            "utf-8",
+                        )
                     )
-                    f.write(unicode("{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"))
+                    f.write(
+                        unicode(
+                            "{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"
+                        )
+                    )
 
     def set_masters_one(self, sender):
         font = self.fonts[sender.get()]
@@ -109,30 +132,36 @@ class CompareWindow():
         rows = []
 
         font1 = self.fonts[self.w.selection_group.font1.get()]
-        master1_id = font1.masters[self.w.selection_group.font1_masters.get()].id
+        master1_id = font1.masters[
+            self.w.selection_group.font1_masters.get()
+        ].id
 
         font2 = self.fonts[self.w.selection_group.font2.get()]
-        master2_id = font2.masters[self.w.selection_group.font2_masters.get()].id
+        master2_id = font2.masters[
+            self.w.selection_group.font2_masters.get()
+        ].id
 
         g2_names = [g.name for g in font2.glyphs]
         for glyph1 in font1.glyphs:
             if glyph1.name in g2_names:
                 result = self.compare_glyphs(
-                            glyph1.layers[master1_id],
-                            font2[glyph1.name].layers[master2_id],
-                        )
+                    glyph1.layers[master1_id],
+                    font2[glyph1.name].layers[master2_id],
+                )
                 if any(result):
-                    rows.append({
-                        "Glyph": str(glyph1.name),
-                        "Path": ",".join(result[0]),
-                        "Components": ",".join(result[1]),
-                        "Anchors": ",".join(result[2]),
-                        "Metrics": ",".join(result[3]),
-                    })
+                    rows.append(
+                        {
+                            "Glyph": str(glyph1.name),
+                            "Path": ",".join(result[0]),
+                            "Components": ",".join(result[1]),
+                            "Anchors": ",".join(result[2]),
+                            "Metrics": ",".join(result[3]),
+                        }
+                    )
             else:
                 print("ERROR", glyph1.name)
         self.w.result_sheet.set(rows)
-        
+
     def compare_glyphs(self, g1_layer, g2_layer):
         cmp_result = []
         path_result = []
@@ -146,18 +175,30 @@ class CompareWindow():
         anchors1 = [a.position for a in g1_layer.anchors]
         anchors2 = [a.position for a in g2_layer.anchors]
         formulas1 = [
-            g1_layer.leftMetricsKey, g1_layer.rightMetricsKey, g1_layer.widthMetricsKey,
-            g1_layer.parent.leftMetricsKey, g1_layer.parent.rightMetricsKey, g1_layer.parent.widthMetricsKey,
+            g1_layer.leftMetricsKey,
+            g1_layer.rightMetricsKey,
+            g1_layer.widthMetricsKey,
+            g1_layer.parent.leftMetricsKey,
+            g1_layer.parent.rightMetricsKey,
+            g1_layer.parent.widthMetricsKey,
         ]
         formulas2 = [
-            g2_layer.leftMetricsKey, g2_layer.rightMetricsKey, g2_layer.widthMetricsKey,
-            g2_layer.parent.leftMetricsKey, g2_layer.parent.rightMetricsKey, g2_layer.parent.widthMetricsKey,
+            g2_layer.leftMetricsKey,
+            g2_layer.rightMetricsKey,
+            g2_layer.widthMetricsKey,
+            g2_layer.parent.leftMetricsKey,
+            g2_layer.parent.rightMetricsKey,
+            g2_layer.parent.widthMetricsKey,
         ]
         metrics_values1 = [
-            g1_layer.LSB, g1_layer.RSB, g1_layer.width,
+            g1_layer.LSB,
+            g1_layer.RSB,
+            g1_layer.width,
         ]
         metrics_values2 = [
-            g2_layer.LSB, g2_layer.RSB, g2_layer.width,
+            g2_layer.LSB,
+            g2_layer.RSB,
+            g2_layer.width,
         ]
 
         if len(components1) != len(components2):
@@ -167,7 +208,9 @@ class CompareWindow():
                 if components1 != components2:
                     cmp_result.append("Order")
                 else:
-                    if [c.transform for c in g1_layer.components] != [c.transform for c in g2_layer.components]:
+                    if [c.transform for c in g1_layer.components] != [
+                        c.transform for c in g2_layer.components
+                    ]:
                         cmp_result.append("Transform")
             else:
                 cmp_result.append("ParentGlyph")
@@ -205,10 +248,10 @@ class CompareWindow():
 
         return path_result, cmp_result, anch_result, metrics_result
 
-
     @staticmethod
     def _size_from_screen():
         size = NSScreen.mainScreen().frame().size
         return int(size.width * 0.8), int(size.height * 0.8)
-        
+
+
 CompareWindow()

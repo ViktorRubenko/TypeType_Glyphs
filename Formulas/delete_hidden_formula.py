@@ -1,6 +1,9 @@
 # MenuTitle: Delete hidden formula
 # -*- coding: utf-8 -*-
 # Version: 0.0.3 (1 Sep, 2020)
+___doc___ = """
+Deletes hidden formulas in font
+"""
 
 
 def main():

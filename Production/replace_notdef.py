@@ -1,6 +1,9 @@
 #MenuTitle: Replace Notdef
 # -*- coding: utf-8 -*-
 #Version: 0.1.2 (23 Jan, 2020)
+__doc__ = """
+Inserts the standard .notdef
+"""
 
 
 def find_nd_font(fonts):

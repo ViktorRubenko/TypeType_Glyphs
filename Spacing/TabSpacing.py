@@ -1,6 +1,11 @@
 # MenuTitle: Tab Spacing
 # -*- coding: utf-8 -*-
 # Version: 0.0.5 (25 Mar, 2021)
+__doc__ = """
+Sets the spacing of the tabular glyphs based on the logic of the sidebearings in the original non-tabular glyphs 
+(based on the shift of the glyph relative to the center).
+"""
+
 
 import vanilla
 
@@ -94,9 +99,15 @@ class Dialog:
         self.w.glyphList._removeSelection()
 
     def updateGlyphList(self, sender):
-        selected_glyphs = [g.name for g in FONT.glyphs if g.selected] if FONT else []
-        tf_glyphs = [g.name for g in FONT.glyphs if ".tf" in g.name] if FONT else []
-        tosf_glyphs = [g.name for g in FONT.glyphs if ".tosf" in g.name] if FONT else []
+        selected_glyphs = (
+            [g.name for g in FONT.glyphs if g.selected] if FONT else []
+        )
+        tf_glyphs = (
+            [g.name for g in FONT.glyphs if ".tf" in g.name] if FONT else []
+        )
+        tosf_glyphs = (
+            [g.name for g in FONT.glyphs if ".tosf" in g.name] if FONT else []
+        )
 
         for i in range(len(self.w.glyphList))[::-1]:
             del self.w.glyphList[i]
@@ -160,10 +171,10 @@ def tab_spacing(glyph_list):
         parent_glyph = FONT[parent_glyph_name]
         if parent_glyph is None:
             warnings.append(
-                    "'{}': could't find parent '{}'".format(
-                        glyph.name, parent_glyph_name
-                    )
+                "'{}': could't find parent '{}'".format(
+                    glyph.name, parent_glyph_name
                 )
+            )
             continue
         for font_master in font_masters:
             layer = glyph.layers[font_master.id]
@@ -172,7 +183,10 @@ def tab_spacing(glyph_list):
             if abs(layer.LSB - layer.RSB - sb_diff) < 2:
                 print(
                     "[{}] '{}' and '{}' have equal sb difference {}".format(
-                        font_master.name, parent_glyph_name, glyph.name, sb_diff
+                        font_master.name,
+                        parent_glyph_name,
+                        glyph.name,
+                        sb_diff,
                     )
                 )
                 continue

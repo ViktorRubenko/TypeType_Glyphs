@@ -1,7 +1,12 @@
 # MenuTitle: Glyph SideDown
 # -*- coding: utf-8 -*-
 # Version: 0.4.3 (21 Feb, 2020)
-
+__doc__ = """
+Makes an inversion. 
+You can set height of the rectangle, left and right overshoots, and the suffix if necessary. 
+The glyphs can be replaced or duplicated. 
+!Delete the formulas before using the script!
+"""
 from __future__ import division
 from collections import namedtuple
 import copy
@@ -12,7 +17,9 @@ Rect_ = namedtuple("Rect", "top bottom left right".split())
 
 class OptionsWindow:
     def __init__(self, SideDown):
-        self.window = vanilla.FloatingWindow((200, 200), title="Glyph SideDown")
+        self.window = vanilla.FloatingWindow(
+            (200, 200), title="Glyph SideDown"
+        )
         h = 20
         self.window.labelTop = vanilla.TextBox((10, 10, -0, h), "Top")
         self.window.textTop = vanilla.EditText((80, 10, -10, h))
@@ -47,7 +54,9 @@ class OptionsWindow:
             ),
         )
         self.window.duplButton = vanilla.Button(
-            (105, 10 + 6 * (h + 5), 85, h), "Duplicate", callback=self.duplicate
+            (105, 10 + 6 * (h + 5), 85, h),
+            "Duplicate",
+            callback=self.duplicate,
         )
 
         self.spinner_window = vanilla.FloatingWindow((200, 200))
@@ -187,7 +196,10 @@ class SideDown:
         for alignment, factor in zip("right left".split(), (1, -1)):
             rect = GSPath()
             for position in (
-                (self.rect.__getattribute__(alignment), layer.bounds[0].y,),
+                (
+                    self.rect.__getattribute__(alignment),
+                    layer.bounds[0].y,
+                ),
                 (
                     self.rect.__getattribute__(alignment) + factor * 5000,
                     layer.bounds[0].y,
@@ -224,7 +236,11 @@ class SideDown:
 
 def test_cutting():
     sd = SideDown(
-        glyphs=Glyphs.font.selection, top=600, bottom=10, lsb=100, rsb=100,
+        glyphs=Glyphs.font.selection,
+        top=600,
+        bottom=10,
+        lsb=100,
+        rsb=100,
     )
     sd.execute()
 

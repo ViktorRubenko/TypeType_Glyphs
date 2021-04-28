@@ -1,6 +1,10 @@
 # MenuTitle: Find overshooting glyphs
 import vanilla
 
+__doc__ = """
+Marks glyphs that go beyond certain height
+"""
+
 
 COLORS = {
     "red": 0,
@@ -16,7 +20,9 @@ class Dialog:
     def __init__(self):
         self.w = vanilla.FloatingWindow((300, 300), minSize=(300, 300))
         self.w.group_ascender = vanilla.Group("auto")
-        self.w.group_ascender.text_ascender = vanilla.TextBox("auto", "Ascender value:")
+        self.w.group_ascender.text_ascender = vanilla.TextBox(
+            "auto", "Ascender value:"
+        )
         self.w.group_ascender.input_ascender = vanilla.EditText(
             "auto", placeholder="ascender"
         )
@@ -33,7 +39,9 @@ class Dialog:
             "auto", items=list(COLORS.keys())
         )
         self.w.group_color.combo_color.set("red")
-        self.w.button_run = vanilla.Button("auto", "Run", callback=self.mark_glyphs)
+        self.w.button_run = vanilla.Button(
+            "auto", "Run", callback=self.mark_glyphs
+        )
         self.w.addAutoPosSizeRules(
             [
                 "V:|-[group_ascender]-[group_descender]-[group_color]-[button_run]-|",
@@ -87,7 +95,10 @@ class Dialog:
                 to_color = True
                 results.append(
                     "{}: ascender {}[{}]/{}".format(
-                        glyph.name, glyph_ascender, glyph_ascender - ascender, ascender
+                        glyph.name,
+                        glyph_ascender,
+                        glyph_ascender - ascender,
+                        ascender,
                     )
                 )
             if glyph_descender < descender:
