@@ -61,7 +61,7 @@ class CompareWindow:
         self.w.exportButton = Button(
             (int(self.size[0] * 0.45), -40, -int(self.size[0] * 0.45), -15),
             "Export",
-            callback=self.export_csv,
+            callback=self.export_txt,
         )
 
         self.w.selection_group.font1.set(0)
@@ -73,7 +73,7 @@ class CompareWindow:
         self.w.center()
         self.w.open()
 
-    def export_csv(self, sender):
+    def export_txt(self, sender):
         export_path = GetSaveFile(
             ProposedFileName="{}_{}".format(
                 self.font_names[self.w.selection_group.font1.get()],
@@ -84,35 +84,34 @@ class CompareWindow:
         fieldnames = "Glyph Path Components Anchors Metrics".split()
         if export_path:
             with open(export_path, "w") as f:
-                f.write(
-                    unicode(
-                        "{0:^20s}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n".format(
-                            *fieldnames
-                        ),
-                        "utf-8",
-                    )
-                )
-                f.write(
-                    unicode("{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8")
-                )
                 for row in self.w.result_sheet.get():
-                    f.write(
-                        unicode(
-                            "{0:<20}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n".format(
-                                row["Glyph"],
-                                row["Path"],
-                                row["Components"],
-                                row["Anchors"],
-                                row["Metrics"],
-                            ),
-                            "utf-8",
-                        )
-                    )
-                    f.write(
-                        unicode(
-                            "{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"
-                        )
-                    )
+                    for key, value in row.items():
+                        if key != "Glyph" and value:
+                            f.write(
+                                unicode(
+                                    "{0:<5} | {1:<10} | {2}\n".format(
+                                        row["Glyph"], key, value
+                                    ),
+                                    "utf-8",
+                                )
+                            )
+                    # f.write(
+                    #     unicode(
+                    #         "{0:<20}|{1:^20s}|{2:^20s}|{3:^20s}|{4:^20s}\n".format(
+                    #             row["Glyph"],
+                    #             row["Path"],
+                    #             row["Components"],
+                    #             row["Anchors"],
+                    #             row["Metrics"],
+                    #         ),
+                    #         "utf-8",
+                    #     )
+                    # )
+                    # f.write(
+                    #     unicode(
+                    #         "{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"
+                    #     )
+                    # )
 
     def set_masters_one(self, sender):
         font = self.fonts[sender.get()]
@@ -152,10 +151,10 @@ class CompareWindow:
                     rows.append(
                         {
                             "Glyph": str(glyph1.name),
-                            "Path": ",".join(result[0]),
-                            "Components": ",".join(result[1]),
-                            "Anchors": ",".join(result[2]),
-                            "Metrics": ",".join(result[3]),
+                            "Path": ", ".join(result[0]),
+                            "Components": ", ".join(result[1]),
+                            "Anchors": ", ".join(result[2]),
+                            "Metrics": ", ".join(result[3]),
                         }
                     )
             else:
@@ -174,32 +173,32 @@ class CompareWindow:
         components2 = [c.name for c in g2_layer.components]
         anchors1 = [a.position for a in g1_layer.anchors]
         anchors2 = [a.position for a in g2_layer.anchors]
-        formulas1 = [
-            g1_layer.leftMetricsKey,
-            g1_layer.rightMetricsKey,
-            g1_layer.widthMetricsKey,
-            g1_layer.parent.leftMetricsKey,
-            g1_layer.parent.rightMetricsKey,
-            g1_layer.parent.widthMetricsKey,
-        ]
-        formulas2 = [
-            g2_layer.leftMetricsKey,
-            g2_layer.rightMetricsKey,
-            g2_layer.widthMetricsKey,
-            g2_layer.parent.leftMetricsKey,
-            g2_layer.parent.rightMetricsKey,
-            g2_layer.parent.widthMetricsKey,
-        ]
-        metrics_values1 = [
-            g1_layer.LSB,
-            g1_layer.RSB,
-            g1_layer.width,
-        ]
-        metrics_values2 = [
-            g2_layer.LSB,
-            g2_layer.RSB,
-            g2_layer.width,
-        ]
+        formulas1 = {
+            "LayerLeftMetricsKey": g1_layer.leftMetricsKey,
+            "LayerRightMetricsKey": g1_layer.rightMetricsKey,
+            "WidthMetricsKey": g1_layer.widthMetricsKey,
+            "GlyphLeftMetricsKey": g1_layer.parent.leftMetricsKey,
+            "GlyphRightMetricsKey": g1_layer.parent.rightMetricsKey,
+            "GlyphWidthMetricsKey": g1_layer.parent.widthMetricsKey,
+        }
+        formulas2 = {
+            "LayerLeftMetricsKey": g2_layer.leftMetricsKey,
+            "LayerRightMetricsKey": g2_layer.rightMetricsKey,
+            "WidthMetricsKey": g2_layer.widthMetricsKey,
+            "GlyphLeftMetricsKey": g2_layer.parent.leftMetricsKey,
+            "GlyphRightMetricsKey": g2_layer.parent.rightMetricsKey,
+            "GlyphWidthMetricsKey": g2_layer.parent.widthMetricsKey,
+        }
+        metrics_values1 = {
+            "LSB": g1_layer.LSB,
+            "RSB": g1_layer.RSB,
+            "Width": g1_layer.width,
+        }
+        metrics_values2 = {
+            "LSB": g2_layer.LSB,
+            "RSB": g2_layer.RSB,
+            "Width": g2_layer.width,
+        }
 
         if len(components1) != len(components2):
             cmp_result.append("Amount")
@@ -239,12 +238,29 @@ class CompareWindow:
             anch_result.append("Amount")
         else:
             if anchors1 != anchors2:
-                anch_result.append("Position")
+                for a1_index, a1 in enumerate(anchors1):
+                    a2 = anchors2[a1_index]
+                    if a1 != a2:
+                        anch_result.append(
+                            "Position:({}, {})/({}, {}))".format(
+                                a1.x, a1.y, a2.x, a2.y
+                            )
+                        )
 
         if formulas1 != formulas2:
-            metrics_result.append("Formulas")
+            for f1_key, f1_value in formulas1.items():
+                f2 = formulas2[f1_key]
+                if f1 != f2:
+                    metrics_result.append(
+                        "Formulas: ({}: {} / {})".format(f1_key, f1, f2)
+                    )
         if metrics_values1 != metrics_values2:
-            metrics_result.append("Values")
+            for v1_key, v1 in metrics_values1.items():
+                v2 = metrics_values2[v1_key]
+                if v1 != v2:
+                    metrics_result.append(
+                        "Values:({}: {} / {})".format(v1_key, v1, v2)
+                    )
 
         return path_result, cmp_result, anch_result, metrics_result
 
