@@ -3,7 +3,7 @@
 # Version: 0.3.4 (23 Mar, 2020)
 __doc__ = """
 Brings all formulas in all masters to the logic of the open master
-""
+"""
 
 import re
 
@@ -43,7 +43,7 @@ def set_master_formula(thisGlyph, thisMasterIndex, attrib):
 
         log.append(
             "\t\t{}: {}({}) => ".format(
-                thisLayer.name.encode('utf-8').strip(),
+                thisLayer.name.encode("utf-8").strip(),
                 thisLayer.__getattribute__(attrib),
                 thisLayer.__getattribute__(attribs[attrib]),
             )
