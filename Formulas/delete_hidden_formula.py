@@ -54,7 +54,6 @@ def main():
                         and attrib_value.split("=|")[-1].strip()
                         not in glyph_names
                     ):
-                        print(attrib_value)
                         log.append(
                             "{}: {} {}".format(
                                 thisGlyph.name,
