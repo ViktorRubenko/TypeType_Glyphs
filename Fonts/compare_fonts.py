@@ -248,7 +248,7 @@ class CompareWindow:
                         )
 
         if formulas1 != formulas2:
-            for f1_key, f1_value in formulas1.items():
+            for f1_key, f1 in formulas1.items():
                 f2 = formulas2[f1_key]
                 if f1 != f2:
                     metrics_result.append(
