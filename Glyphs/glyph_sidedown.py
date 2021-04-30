@@ -1,16 +1,18 @@
 # MenuTitle: Glyph SideDown
 # -*- coding: utf-8 -*-
 # Version: 0.4.3 (21 Feb, 2020)
+from __future__ import division
+from collections import namedtuple
+import copy
+import vanilla
+
+
 __doc__ = """
 Makes an inversion. 
 You can set height of the rectangle, left and right overshoots, and the suffix if necessary. 
 The glyphs can be replaced or duplicated. 
 !Delete the formulas before using the script!
 """
-from __future__ import division
-from collections import namedtuple
-import copy
-import vanilla
 
 Rect_ = namedtuple("Rect", "top bottom left right".split())
 
