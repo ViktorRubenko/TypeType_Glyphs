@@ -65,7 +65,7 @@ class CompareWindow:
         )
 
         self.w.selection_group.font1.set(0)
-        self.w.selection_group.font1.set(1)
+        self.w.selection_group.font1.set(1 if len(self.font_names) == 2 else 0)
 
         self.set_masters_one(self.w.selection_group.font1)
         self.set_masters_two(self.w.selection_group.font2)
@@ -83,14 +83,20 @@ class CompareWindow:
         )
         fieldnames = "Glyph Path Components Anchors Metrics".split()
         if export_path:
+            max_len = max(
+                len(row["Glyph"]) for row in self.w.result_sheet.get()
+            )
             with open(export_path, "w") as f:
                 for row in self.w.result_sheet.get():
                     for key, value in row.items():
                         if key != "Glyph" and value:
                             f.write(
                                 unicode(
-                                    "{0:<5} | {1:<10} | {2}\n".format(
-                                        row["Glyph"], key, value
+                                    "{0:<{3}} | {1:<10} | {2}\n".format(
+                                        row["Glyph"],
+                                        key,
+                                        value,
+                                        max_len,
                                     ),
                                     "utf-8",
                                 )
