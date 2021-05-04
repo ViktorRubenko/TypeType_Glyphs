@@ -1,6 +1,6 @@
 # MenuTitle: Absotule bearing values to formula
 # -*- coding: utf-8 -*-
-# Version: 0.0.2 (10 Jan, 2020)
+
 __doc__ = """
 Sets == for values without any formula in the open master
 """
@@ -15,6 +15,8 @@ LOG = []
 
 def set_sb_keys(glyph, glayer):
     found = False
+    if glayer.widthMetricsKey or glyph.widthMetricsKey:
+        return
     for key, value in ATTRS.items():
         if not glayer.__getattribute__(key) and not glyph.__getattribute__(
             key
