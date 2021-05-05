@@ -38,8 +38,7 @@ def main():
         for thisLayer in thisGlyph.layers:
             if (
                 all(
-                    component.automaticAlignment
-                    for component in thisLayer.components
+                    component.doesAlign() for component in thisLayer.components
                 )
                 and not thisLayer.paths
             ):
