@@ -45,8 +45,6 @@ class MultiplyWindow:
         font = Glyphs.font
 
         for glyph in font.glyphs:
-            if glyph.name != "n":
-                continue
             for layer in glyph.layers:
                 rsb, lsb, width = layer.RSB, layer.LSB, layer.width
                 for (
