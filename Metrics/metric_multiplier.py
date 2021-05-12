@@ -42,6 +42,12 @@ class MultiplyWindow:
             self.alert_window()
             return
 
+        pos_coef = coef
+        if coef < 1:
+            neg_coef = 1 + (1 - coef)
+        else:
+            neg_coef = 2 - coef
+
         font = Glyphs.font
 
         for glyph in font.glyphs:
@@ -52,15 +58,19 @@ class MultiplyWindow:
                 ) in "rightMetricsKey leftMetricsKey widthMetricsKey".split():
                     setattr(layer, attr, None)
                     setattr(glyph, attr, None)
-                layer.LSB = int(lsb * coef)
-                layer.RSB = int(rsb * coef)
+                layer.LSB = (
+                    round(lsb * pos_coef) if lsb > 0 else round(lsb * neg_coef)
+                )
+                layer.RSB = (
+                    round(rsb * pos_coef) if rsb > 0 else round(rsb * neg_coef)
+                )
 
         kerning = font.kerning
         for master_id, level1 in kerning.items():
             for first_glyph_id, level2 in level1.items():
                 for second_glyph_id, value in level2.items():
                     kerning[master_id][first_glyph_id][second_glyph_id] = (
-                        value * coef
+                        value * pos_coef if value > 0 else value * neg_coef
                     )
 
     def alert_window(self):
