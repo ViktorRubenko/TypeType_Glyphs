@@ -96,7 +96,7 @@ class MultiplyWindow:
                     setattr(layer, attr, None)
                     setattr(glyph, attr, None)
 
-                diff = width * pos_coef - width
+                diff = round(width * pos_coef) - width
                 layer.LSB = lsb + diff // 2
                 layer.RSB = rsb + diff // 2 + diff % 2
 
