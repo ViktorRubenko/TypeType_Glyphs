@@ -89,7 +89,7 @@ class MultiplyWindow:
                     setattr(layer, attr, None)
                     setattr(glyph, attr, None)
 
-                diff = int(font.upm * coef) - font.upm
+                diff = round(font.upm * coef) - font.upm
                 layer.LSB = lsb + diff // 2
                 layer.RSB = rsb + diff // 2 + diff % 2
 
