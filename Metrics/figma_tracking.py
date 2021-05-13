@@ -1,8 +1,7 @@
-# MenuTitle: Multiply metrics and kerning
+# MenuTitle: Figma tracking
 # -*- coding: utf-8 -*-
-# Version: 0.1.1 (07 Oct, 2019)
 __doc__ = """
-Multiply metrics and kerning by given coefficient
+Correlate sidebearings to a multiplied UPM value for Figma tracking 
 """
 
 
@@ -14,7 +13,7 @@ class MultiplyWindow:
     def __init__(self):
         self.window = vanilla.Window(
             (180, 200),
-            title="Multiply metrics & kerning",
+            title="Figma tracking",
         )
 
         self.window.label = vanilla.TextBox(
@@ -81,12 +80,6 @@ class MultiplyWindow:
 
     @staticmethod
     def multiply(font, coef):
-        pos_coef = coef
-        if coef < 1:
-            neg_coef = 1 + (1 - coef)
-        else:
-            neg_coef = 2 - coef
-
         for glyph in font.glyphs:
             for layer in glyph.layers:
                 rsb, lsb, width = layer.RSB, layer.LSB, layer.width
@@ -96,17 +89,9 @@ class MultiplyWindow:
                     setattr(layer, attr, None)
                     setattr(glyph, attr, None)
 
-                diff = round(width * pos_coef) - width
+                diff = int(font.upm * coef) - font.upm
                 layer.LSB = lsb + diff // 2
                 layer.RSB = rsb + diff // 2 + diff % 2
-
-        kerning = font.kerning
-        for master_id, level1 in kerning.items():
-            for first_glyph_id, level2 in level1.items():
-                for second_glyph_id, value in level2.items():
-                    kerning[master_id][first_glyph_id][second_glyph_id] = (
-                        value * pos_coef if value > 0 else value * neg_coef
-                    )
 
     def alert_window(self, text, clear=True):
         alert_w = vanilla.FloatingWindow((200, 80), "Alert")
