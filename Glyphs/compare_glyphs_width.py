@@ -1,7 +1,7 @@
 # MenuTitle: Compare glyphs width
 # -*- coding: utf-8 -*-
 __doc__ = """
-Finds glyphs whose width difference is greater than a given threshold
+Finds glyphs whose width difference is equal or greater than a given threshold
 """
 
 
