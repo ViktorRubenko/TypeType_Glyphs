@@ -1,7 +1,7 @@
 # MenuTitle: Compare glyph properties
 # -*- coding: utf-8 -*-
 __doc__ = """
-Finds glyphs whose selected metric difference is equal or greater than a given threshold
+Finds glyphs whose selected property difference is equal or greater than a given threshold
 """
 
 
