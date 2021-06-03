@@ -1,4 +1,4 @@
-# MenuTitle: Compare glyph metrics
+# MenuTitle: Compare glyph properties
 # -*- coding: utf-8 -*-
 __doc__ = """
 Finds glyphs whose selected metric difference is equal or greater than a given threshold
@@ -11,12 +11,13 @@ import os
 from collections import Counter
 
 
-METRICS = {
+PROPERTIES = {
     0: ["LSB"],
     1: ["RSB"],
     2: ["LSB", "RSB"],
     3: ["width"],
     4: ["LSB", "RSB", "width"],
+    5: ["Height"],
 }
 
 
@@ -30,7 +31,7 @@ class CompareWindow:
             for font in Glyphs.fonts
         ]
         self.size = self._size_from_screen()
-        self.w = Window(self.size, "Compare Fonts")
+        self.w = Window(self.size, "Compare Glyph Properties")
 
         self.w.font1 = PopUpButton(
             "auto",
@@ -53,20 +54,22 @@ class CompareWindow:
 
         self.w.nest = Group("auto")
 
-        self.w.nest.metric_text = TextBox(
+        self.w.nest.prop_text = TextBox(
             "auto",
-            "Metric",
+            "Property",
         )
 
-        self.w.nest.metric = PopUpButton(
+        self.w.nest.prop = PopUpButton(
             "auto",
             [
                 "LSB",
                 "RSB",
                 "Both SB",
                 "Width",
-                "ALL",
+                "ALL spacing",
+                "Height",
             ],
+            callback=self.disable_td_entry,
         )
 
         self.w.nest.td_text = TextBox(
@@ -90,7 +93,7 @@ class CompareWindow:
             [],
             columnDescriptions=[
                 {"title": "Glyph"},
-                {"title": "Metric"},
+                {"title": "Property"},
                 {"title": "Font 1"},
                 {"title": "Font 2"},
             ],
@@ -107,10 +110,10 @@ class CompareWindow:
 
         self.w.nest.addAutoPosSizeRules(
             [
-                "H:|-[metric_text]-[metric]-[td_text]-[threshold_entry(>=100)]-[run_button]-|",
-                "V:|-[metric_text]-|",
+                "H:|-[prop_text]-[prop]-[td_text]-[threshold_entry(>=100)]-[run_button]-|",
+                "V:|-[prop_text]-|",
                 "V:|-[td_text]-|",
-                "V:|-[metric]-|",
+                "V:|-[prop]-|",
                 "V:|-[threshold_entry]-|",
                 "V:|-[run_button]-|",
             ]
@@ -136,6 +139,14 @@ class CompareWindow:
 
         self.w.center()
         self.w.open()
+
+    def disable_td_entry(self, sender):
+        if sender.get() == 5:
+            self.w.nest.threshold_entry.set("0")
+            self.w.nest.threshold_entry.enable(False)
+        else:
+            self.w.nest.threshold_entry.set("")
+            self.w.nest.threshold_entry.enable(True)
 
     def mark_glyphs(self, font, glyph_names):
         def mark_glyphs(mark_window):
@@ -194,8 +205,8 @@ class CompareWindow:
         font2 = self.fonts[self.w.font2.get()]
         master2_id = font2.masters[self.w.font2_masters.get()].id
 
-        metric_id = self.w.nest.metric.get()
-        metrics = METRICS[metric_id]
+        prop_id = self.w.nest.prop.get()
+        props = PROPERTIES[prop_id]
 
         try:
             threshold = self.w.nest.threshold_entry.get()
@@ -218,20 +229,26 @@ class CompareWindow:
             return
 
         g2_names = [g.name for g in font2.glyphs]
-        for metric in metrics:
+        for prop in props:
             for glyph1 in font1.glyphs:
                 if glyph1.name in g2_names:
-                    result = self.compare_metric(
-                        metric,
-                        threshold,
-                        glyph1.layers[master1_id],
-                        font2[glyph1.name].layers[master2_id],
-                    )
+                    if prop_id in range(5):
+                        result = self.compare_metric(
+                            prop,
+                            threshold,
+                            glyph1.layers[master1_id],
+                            font2[glyph1.name].layers[master2_id],
+                        )
+                    elif prop_id == 5:
+                        result = self.compare_height(
+                            glyph1.layers[master1_id],
+                            font2[glyph1.name].layers[master2_id],
+                        )
                     if any(result):
                         rows.append(
                             {
                                 "Glyph": str(glyph1.name),
-                                "Metric": metric,
+                                "Property": prop,
                                 "Font 1": str(result[0]),
                                 "Font 2": str(result[1]),
                             }
@@ -245,6 +262,19 @@ class CompareWindow:
         value2 = getattr(g2_layer, metric_name)
         if abs(value1 - value2) >= threshold:
             return value1, value2
+        return None, None
+
+    def compare_height(self, g1_layer, g2_layer):
+        value1 = (
+            int(g1_layer.bounds.origin.y),
+            int(g1_layer.bounds.origin.y + g1_layer.bounds.size.height),
+        )
+        value2 = (
+            int(g2_layer.bounds.origin.y),
+            int(g2_layer.bounds.origin.y + g2_layer.bounds.size.height),
+        )
+        if value1 != value2:
+            return str(value1), str(value2)
         return None, None
 
     @staticmethod
