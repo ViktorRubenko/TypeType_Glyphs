@@ -31,7 +31,11 @@ class CompareWindow:
             for font in Glyphs.fonts
         ]
         self.size = self._size_from_screen()
-        self.w = Window(self.size, "Compare Glyph Properties")
+        self.w = Window(
+            self.size,
+            "Compare Glyph Properties",
+            maxSize=(1000, 1000),
+        )
 
         self.w.font1 = PopUpButton(
             "auto",
@@ -145,8 +149,9 @@ class CompareWindow:
             self.w.nest.threshold_entry.set("0")
             self.w.nest.threshold_entry.enable(False)
         else:
-            self.w.nest.threshold_entry.set("")
-            self.w.nest.threshold_entry.enable(True)
+            if not self.w.nest.threshold_entry.isEnabled():
+                self.w.nest.threshold_entry.set("")
+                self.w.nest.threshold_entry.enable(True)
 
     def mark_glyphs(self, font, glyph_names):
         def mark_glyphs(mark_window):
