@@ -83,18 +83,22 @@ class ShiftWindow:
             # horizontal extremum
             if nodes[0].y > nodes[2].y and nodes[-1].y > nodes[2].y:
                 # horizontal bottom
-                nodes[2].x += tb_shift
+                for i in range(1, 4):
+                    nodes[i].x += tb_shift
             elif nodes[0].y < nodes[2].y and nodes[-1].y < nodes[2].y:
                 # horizontal top
-                nodes[2].x -= tb_shift
+                for i in range(1, 4):
+                    nodes[i].x -= tb_shift
         elif nodes[1].x == nodes[2].x == nodes[3].x:
             # vertical
             if nodes[0].x > nodes[2].x and nodes[-1].x > nodes[2].x:
                 # vertical left
-                nodes[2].y -= lr_shift
+                for i in range(1, 4):
+                    nodes[i].y -= lr_shift
             elif nodes[0].x < nodes[2].x and nodes[-1].x < nodes[2].x:
                 # vertical right
-                nodes[2].y += lr_shift
+                for i in range(1, 4):
+                    nodes[i].y += lr_shift
 
     def process(self, sender):
         try:
