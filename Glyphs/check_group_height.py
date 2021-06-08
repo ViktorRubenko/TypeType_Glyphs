@@ -1,7 +1,9 @@
 # MenuTitle: Check selected height
 # -*- coding: utf-8 -*-
 
-__doc__ == "Compare bottom and top height values of selected glyphs with reference glyph"
+__doc__ == """
+Compare bottom and top height values of selected glyphs with reference glyph
+"""
 
 
 from vanilla import *

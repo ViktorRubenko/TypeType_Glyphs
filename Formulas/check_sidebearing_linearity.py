@@ -1,7 +1,9 @@
 # MenuTitle: Check sidebearing linearity
 # -*- coding: utf-8 -*-
 
-__doc__ = "Check =| and == sidebearing values for linearity between layers"
+__doc__ = """
+Check =| and == sidebearing values for linearity between layers
+"""
 
 
 font = Glyphs.font
