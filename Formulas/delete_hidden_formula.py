@@ -37,11 +37,17 @@ def main():
                 thisGlyph.__setattr__(attrib, None)
         for thisLayer in thisGlyph.layers:
             if (
-                all(
-                    component.doesAlign() for component in thisLayer.components
+                (
+                    all(
+                        component.doesAlign()
+                        for component in thisLayer.components
+                    )
+                    or all(
+                        component.isAligned()
+                        for component in thisLayer.components
+                    )
                 )
-                and not thisLayer.paths
-            ):
+            ) and not thisLayer.paths:
                 for attrib in (
                     "leftMetricsKey",
                     "rightMetricsKey",
