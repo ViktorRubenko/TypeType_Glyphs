@@ -23,15 +23,20 @@ def main():
             ]
             roman_italic = {}
             for l in compatible_layers:
-                roman_italic.setdefault(l.master.weightValue, []).append(l)
+                roman_italic.setdefault(
+                    (l.master.weightValue, l.master.widthValue), []
+                ).append(l)
 
             for item in layer.selection:
                 if type(item) == GSNode:
                     pathNode_indexes.append(layer.indexPathOfNode_(item))
-
             for weight, pair in roman_italic.items():
                 if len(pair) != 2:
-                    print("Invalid weight {} pair: {},".format(weight, pair))
+                    print(
+                        "Invalid weight/width {} pair: {},".format(
+                            weight, pair
+                        )
+                    )
                     continue
                 roman, italic = sorted(pair, key=lambda l: l.italicAngle())
                 italic.annotations = []
