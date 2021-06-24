@@ -35,6 +35,8 @@ def main():
                     )
                 )
                 thisGlyph.__setattr__(attrib, None)
+
+        # check composite glyphs with full autoalignment
         for thisLayer in thisGlyph.layers:
             if (
                 (
@@ -43,7 +45,7 @@ def main():
                         for component in thisLayer.components
                     )
                     or all(
-                        component.isAligned()
+                        component.isAligned() > 0
                         for component in thisLayer.components
                     )
                 )
