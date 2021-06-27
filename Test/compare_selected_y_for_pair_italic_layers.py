@@ -2,8 +2,16 @@
 # -*- coding: utf-8 -*-
 
 __doc__ = """
-Compare selected nodes Y value between roman/italic compatible pair layers.
+Compare selected nodes/anchors Y value between roman/italic compatible pair layers.
 """
+
+
+def add_circle(layer, position):
+    annotation = GSAnnotation()
+    annotation.type = CIRCLE
+    annotation.width = 10
+    annotation.position = position
+    layer.annotations.append(annotation)
 
 
 def main():
@@ -11,6 +19,7 @@ def main():
     font = Glyphs.font
     current_tab = font.currentTab
     pathNode_indexes = []
+    anchor_names = []
     if current_tab:
         if font.selectedLayers and len(font.selectedLayers) == 1:
             layer = font.selectedLayers[0]
@@ -23,13 +32,42 @@ def main():
             ]
             roman_italic = {}
             for l in compatible_layers:
-                roman_italic.setdefault(
-                    (l.master.weightValue, l.master.widthValue), []
-                ).append(l)
+                axis_location = l.master.customParameters["Axis Location"]
+                if axis_location:
+                    print(
+                        l.master,
+                        tuple(
+                            int(axis["Location"])
+                            for axis in axis_location
+                            if axis["Axis"].lower()
+                            not in [
+                                "slant",
+                                "italic",
+                            ]
+                        ),
+                    )
+                    roman_italic.setdefault(
+                        tuple(
+                            int(axis["Location"])
+                            for axis in axis_location
+                            if axis["Axis"].lower()
+                            not in [
+                                "slant",
+                                "italic",
+                            ]
+                        ),
+                        [],
+                    ).append(l)
+                else:
+                    roman_italic.setdefault(
+                        (l.master.weightValue, l.master.widthValue), []
+                    ).append(l)
 
             for item in layer.selection:
                 if type(item) == GSNode:
                     pathNode_indexes.append(layer.indexPathOfNode_(item))
+                elif type(item) == GSAnchor:
+                    anchor_names.append(item.name)
             for weight, pair in roman_italic.items():
                 if len(pair) != 2:
                     print(
@@ -62,11 +100,25 @@ def main():
                             (roman, roman_node),
                             (italic, italic_node),
                         ]:
-                            annotation = GSAnnotation()
-                            annotation.type = CIRCLE
-                            annotation.width = 10
-                            annotation.position = node.position
-                            layer.annotations.append(annotation)
+                            add_circle(layer, node.position)
+                for anchor_name in anchor_names:
+                    roman_anchor = roman.anchorForName_(anchor_name)
+                    italic_anchor = italic.anchorForName_(anchor_name)
+                    if roman_anchor.y != italic_anchor.y:
+                        print(
+                            "Anchor '{}', Y: {} ( {} )/{} ( {} )".format(
+                                anchor_name,
+                                roman.name,
+                                roman_anchor.y,
+                                italic.name,
+                                italic_anchor.y,
+                            )
+                        )
+                        for layer, anchor in [
+                            (roman, roman_anchor),
+                            (italic, italic_anchor),
+                        ]:
+                            add_circle(layer, anchor.position)
 
     Glyphs.showMacroWindow()
 
