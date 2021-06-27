@@ -42,18 +42,6 @@ def main():
             for l in compatible_layers:
                 axis_location = l.master.customParameters["Axis Location"]
                 if axis_location:
-                    print(
-                        l.master,
-                        tuple(
-                            int(axis["Location"])
-                            for axis in axis_location
-                            if axis["Axis"].lower()
-                            not in [
-                                "slant",
-                                "italic",
-                            ]
-                        ),
-                    )
                     roman_italic.setdefault(
                         tuple(
                             int(axis["Location"])
