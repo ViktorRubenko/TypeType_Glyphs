@@ -1,4 +1,4 @@
-# MenuTitle: Multiple-master "open corner" for selected nodes
+# MenuTitle: MM "open corner" for selected nodes
 # -*- coding: utf-8 -*-
 
 __doc__ = """

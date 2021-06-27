@@ -1,4 +1,4 @@
-# MenuTitle: Multiple-master deletion of nodes with path breaking
+# MenuTitle: MM deletion of nodes with path breaking
 # -*- coding: utf-8 -*-
 
 __doc__ = """
@@ -31,22 +31,28 @@ def main():
                         if l not in compatible_layers
                     )
                 )
-            for item in layer.selection:
+            selection = list(layer.selection)
+            for item in [selection[0], selection[-1]]:
                 if type(item) == GSNode:
                     pathNode_indexes.append(layer.indexPathOfNode_(item))
 
+            if len(pathNode_indexes) != 2:
+                print("invalid segment")
+                return
+
             for layer in compatible_layers:
+                nodes = []
                 for pathNode_index in pathNode_indexes:
                     path_index, node_index = (
                         pathNode_index[0],
                         pathNode_index[1],
                     )
                     path = layer.paths[path_index]
-                    node = path.nodes[node_index]
-                    split_node = layer.dividePathAtNode_(node)
-                    split_path = split_node.parent
-                    split_path.removeNodeCheck_(split_node)
-                    path.removeNodeCheck_(path.nodes[len(path.nodes) - 1])
+                    nodes.append(path.nodes[node_index])
+                for node in nodes:
+                    splited_node = layer.dividePathAtNode_(node)
+                    splited_path = splited_node.parent
+                layer.removePath_(splited_path)
 
 
 if __name__ == "__main__":
