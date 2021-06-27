@@ -30,6 +30,14 @@ def main():
                 if (l.isMasterLayer or l.isSpecialLayer)
                 and (l.compareString() == currentCS)
             ]
+            if len(compatible_layers) != len(
+                [
+                    l
+                    for l in layer.parent.layers
+                    if (l.isMasterLayer or l.isSpecialLayer)
+                ]
+            ):
+                print("Not all layers are compatible")
             roman_italic = {}
             for l in compatible_layers:
                 axis_location = l.master.customParameters["Axis Location"]
