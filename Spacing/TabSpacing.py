@@ -183,7 +183,7 @@ def tab_spacing(glyph_list):
             if abs(layer.LSB - layer.RSB - sb_diff) < 2:
                 print(
                     "[{}] '{}' and '{}' have equal sb difference {}".format(
-                        font_master.name,
+                        font_master.name.encode("utf-8"),
                         parent_glyph_name,
                         glyph.name,
                         sb_diff,
