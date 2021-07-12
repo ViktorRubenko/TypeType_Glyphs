@@ -32,13 +32,20 @@ def main():
                     )
                 )
             selection = list(layer.selection)
-            for item in [selection[0], selection[-1]]:
+            for item in selection:
                 if type(item) == GSNode:
                     pathNode_indexes.append(layer.indexPathOfNode_(item))
 
-            if len(pathNode_indexes) != 2:
+            if len(pathNode_indexes) < 2:
                 print("invalid segment")
                 return
+
+            pathNode_indexes = sorted(
+                pathNode_indexes,
+                key=lambda x: (x[0], x[1]),
+                reverse=True,
+            )
+            pathNode_indexes = [pathNode_indexes[0]] + [pathNode_indexes[-1]]
 
             for layer in compatible_layers:
                 nodes = []
