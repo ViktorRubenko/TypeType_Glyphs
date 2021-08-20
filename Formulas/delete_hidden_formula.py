@@ -62,7 +62,7 @@ def main():
                         not in glyph_names
                     ):
                         log.append(
-                            "{}: {} {}".format(
+                            "GLYPH {}: {} {}".format(
                                 thisGlyph.name,
                                 attribs[attrib],
                                 thisGlyph.__getattribute__(attrib),
@@ -71,7 +71,7 @@ def main():
                         thisGlyph.__setattr__(attrib, None)
                     if thisLayer.__getattribute__(attrib):
                         log.append(
-                            "{}/{}: {} {}".format(
+                            "LAYER {}/{}: {} {}".format(
                                 thisGlyph.name,
                                 thisLayer.name,
                                 attribs[attrib],
