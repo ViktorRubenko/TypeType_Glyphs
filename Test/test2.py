@@ -39,23 +39,19 @@ class PairSpaceCalculator:
         )
         return top, bottom
 
-    def compute_space(self, pair, use_kerning=True):
+    def compute_space(self, pair):
         self.font = Glyphs.font
         left_glyph, right_glyph = (
             self.font.glyphs[u]
             for u in ("{:04x}".format(ord(g)) for g in pair)
         )
         if all((left_glyph, right_glyph)):
-            return self._compute_space(
-                left_glyph, right_glyph, use_kerning=use_kerning
-            )
+            return self._compute_space(left_glyph, right_glyph)
         else:
             raise ValueError("Font doesn't containt given pair")
 
-    def _compute_space(self, left_glyph, right_glyph, use_kerning):
-        kerning_value = (
-            self.get_kerning(left_glyph, right_glyph) if use_kerning else 0
-        )
+    def _compute_space(self, left_glyph, right_glyph):
+        kerning_value = self.get_kerning(left_glyph, right_glyph)
 
         left_layer, right_layer = (
             g.layers[self.master_id] for g in (left_glyph, right_glyph)
@@ -69,10 +65,20 @@ class PairSpaceCalculator:
             right_layer, self.constants.right, top, bottom
         )
         left_side_second = self.get_coordinates(
-            left_layer, self.constants.left, top, bottom, kerning=kerning_value
+            left_layer,
+            self.constants.left,
+            top,
+            bottom,
         )
-        poly = Polygon(right_side_first + left_side_second[::-1])
-        return poly.area
+        space_area = Polygon(right_side_first + left_side_second[::-1]).area
+        space_area_with_kerning = space_area
+        if kerning_value != 0:
+            for coordinate in left_side_second:
+                coordinate[0] += kerning_value
+                space_area_with_kerning = Polygon(
+                    right_side_first + left_side_second[::-1]
+                ).area
+        return space_area, space_area_with_kerning
 
     def get_kerning(self, left_glyph, right_glyph):
         kerning = self.font.kerning[self.master_id]
@@ -93,7 +99,7 @@ class PairSpaceCalculator:
             y = -top_y
         return x + tangens * y
 
-    def get_coordinates(self, layer, pair_side, top, bottom, kerning=0):
+    def get_coordinates(self, layer, pair_side, top, bottom):
         line_x = (
             layer.bounds.origin.x
             if pair_side == self.constants.left
@@ -146,7 +152,7 @@ class PairSpaceCalculator:
             sb = -sb
 
         for coordinate in coordinates:
-            coordinate[0] += sb + kerning
+            coordinate[0] += sb
 
         return coordinates
 
@@ -159,10 +165,9 @@ class GUI(object):
             minSize=(200, 300),
             maxSize=(500, 600),
         )
-        self.w.checkBox = vanilla.CheckBox(
+        self.w.TextBox = vanilla.TextBox(
             "auto",
-            "Use kerning",
-            value=True,
+            "Pairs:",
         )
         self.w.textView = vanilla.TextEditor("auto")
         self.w.buttonRun = vanilla.Button(
@@ -171,8 +176,8 @@ class GUI(object):
 
         self.w.addAutoPosSizeRules(
             [
-                "V:|-[checkBox]-[textView]-[buttonRun]-|",
-                "H:|-[checkBox]-|",
+                "V:|-[TextBox]-[textView]-[buttonRun]-|",
+                "H:|-[TextBox]-|",
                 "H:|-[textView]-|",
                 "H:|-[buttonRun]-|",
             ]
@@ -181,18 +186,24 @@ class GUI(object):
         self.w.open()
 
     def runHandler(self, sender):
-        use_kerning = self.w.checkBox.get()
         space_calc = PairSpaceCalculator()
+        print("*" * 22)
+        print("PAIR  |  SPACE  | KERNING ")
         for pair in self.w.textView.get().strip().split():
             if not pair:
                 continue
             try:
-                space_area = space_calc.compute_space(
-                    pair=pair, use_kerning=use_kerning
+                space_area, space_area_with_kerning = space_calc.compute_space(
+                    pair=pair
                 )
-                print(pair, ":", int(space_area))
+                print(
+                    pair.ljust(8, " "),
+                    str(int(space_area)).ljust(8, " "),
+                    str(int(space_area_with_kerning)).ljust(8, " "),
+                )
             except ValueError as error:
                 print(pair, error)
+        print("*" * 22)
         Glyphs.showMacroWindow()
 
 
