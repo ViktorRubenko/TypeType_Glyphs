@@ -9,182 +9,152 @@ from shapely.geometry import Polygon
 Glyphs.clearLog()
 font = Glyphs.font
 
-# g = font["H"]
-# l = g.layers[masterIndex]
-# ref_space = (l.LSB + l.RSB) * l.bounds.size.height
+
+class Constants:
+    def __init__(self):
+        self.right = "right"
+        self.left = "left"
 
 
-def compute_for_pair(pair):
-    masterIndex = font.masterIndex
+class PairSpaceCalculator:
+    def __init__(self):
+        self.font = None
+        self.constants = Constants()
 
-    right_layer = font[pair[0]].layers[masterIndex]
-    left_layer = font[pair[1]].layers[masterIndex]
+    @property
+    def current_master(self):
+        return self.font.selectedFontMaster if self.font else None
 
-    bottom = int(max(right_layer.bounds.origin.y, left_layer.bounds.origin.y))
-    top = int(
-        min(
-            right_layer.bounds.origin.y + right_layer.bounds.size.height,
-            left_layer.bounds.origin.y + left_layer.bounds.size.height,
+    @property
+    def master_id(self):
+        current_master = self.current_master
+        return current_master.id if current_master else None
+
+    @staticmethod
+    def compute_extremes(layers):
+        bottom = int(max(l.bounds.origin.y for l in layers))
+        top = int(
+            min((l.bounds.origin.y + l.bounds.size.height) for l in layers)
         )
-    )
+        return top, bottom
 
-    right_side_first = get_coordinates(right_layer, "right", top, bottom)
-    left_side_second = get_coordinates(left_layer, "left", top, bottom)
-    # print(right_side_first)
-    # print("-" * 10)
-    # print(left_side_second)
-    poly = Polygon(right_side_first + left_side_second[::-1])
-    return poly.area
-    # print(ref_space)
-
-
-def italicize(x, y, italicAngle, top, side):
-    if italicAngle == 0:
-        return x
-    italicAngle = math.radians(italicAngle)
-    tangens = math.tan(italicAngle)
-    if side == "right":
-        y = top - y
-        y = -y
-    return x + tangens * y
-
-
-def get_coordinates(layer, side, top, bottom):
-    line_x = (
-        layer.bounds.origin.x
-        if side == "left"
-        else layer.bounds.origin.x + layer.bounds.size.width
-    )
-    line_y = list(range(bottom, top - 1, 5)) + [top]
-    line_coordinates = [
-        (y, italicize(line_x, y, layer.master.italicAngle, top, side))
-        for y in line_y
-    ]
-    increment = -1 if side == "right" else 1
-    sb = layer.RSB if side == "right" else layer.LSB
-    coordinates = []
-    for y, x in line_coordinates:
-        shift = 0
-        while True:
-            intersection = layer.intersectionsBetweenPoints(
-                (x + shift - 1, y - 1),
-                (x + shift + 1, y + 1),
-                components=True,
+    def compute_space(self, pair, use_kerning=True):
+        self.font = Glyphs.font
+        pair = pair.decode("utf-8")
+        left_glyph, right_glyph = (
+            self.font.glyphs[u]
+            for u in ("{:04x}".format(ord(g)) for g in pair)
+        )
+        if all((left_glyph, right_glyph)):
+            return self._compute_space(
+                left_glyph, right_glyph, use_kerning=use_kerning
             )
-            if len(intersection) > 2:
-                coordinates.append([shift, y])
-                break
-            intersection = layer.intersectionsBetweenPoints(
-                (x + shift + 1, y - 1),
-                (x + shift - 1, y + 1),
-                components=True,
-            )
-            if len(intersection) > 2:
-                coordinates.append([shift, y])
-                break
-            shift += increment
-            if shift > 1000:
-                print("ERROR INFINITE WHILE")
-                break
-    if side == "right":
-        sb = -sb
+        else:
+            raise ValueError("Font doesn't containt given pair")
 
-    for coordinate in coordinates:
-        coordinate[0] += sb
+    def _compute_space(self, left_glyph, right_glyph, use_kerning):
+        kerning_value = (
+            self.get_kerning(left_glyph, right_glyph) if use_kerning else 0
+        )
 
-    return coordinates
+        left_layer, right_layer = (
+            g.layers[self.master_id] for g in (left_glyph, right_glyph)
+        )
+
+        top, bottom = PairSpaceCalculator.compute_extremes(
+            [right_layer, left_layer]
+        )
+
+        right_side_first = self.get_coordinates(
+            right_layer, self.constants.right, top, bottom
+        )
+        left_side_second = self.get_coordinates(
+            left_layer, self.constants.left, top, bottom, kerning=kerning_value
+        )
+        poly = Polygon(right_side_first + left_side_second[::-1])
+        return poly.area
+
+    def get_kerning(self, left_glyph, right_glyph):
+        kerning = self.font.kerning[self.master_id]
+        right_side = kerning.get(left_glyph.rightKerningKey, {})
+        right_side.update(kerning.get(left_glyph.id, {}))
+
+        value = right_side.get(right_glyph.leftKerningKey, None)
+        if not value:
+            value = right_side.get(right_glyph.id, 0)
+        return value
+
+    def italicize_x(self, x, y, top_y, italicAngle, glyph_side):
+        if italicAngle == 0:
+            return x
+        italicAngle = math.radians(italicAngle)
+        tangens = math.tan(italicAngle)
+        if glyph_side == self.constants.right:
+            y = -top_y
+        return x + tangens * y
+
+    def get_coordinates(self, layer, pair_side, top, bottom, kerning=0):
+        line_x = (
+            layer.bounds.origin.x
+            if pair_side == self.constants.left
+            else layer.bounds.origin.x + layer.bounds.size.width
+        )
+        line_y = list(range(bottom, top - 1, 5)) + [top]
+        if self.current_master.italicAngle != 0:
+            line_coordinates = [
+                (
+                    self.italicize_x(
+                        line_x,
+                        y,
+                        self.current_master.italicAngle,
+                        top,
+                        pair_side,
+                    ),
+                    y,
+                )
+                for y in line_y
+            ]
+        else:
+            line_coordinates = [(line_x, y) for y in line_y]
+        increment = -1 if pair_side == self.constants.right else 1
+        sb = layer.RSB if pair_side == self.constants.left else layer.LSB
+        coordinates = []
+        for x, y in line_coordinates:
+            shift = 0
+            while True:
+                intersection = layer.intersectionsBetweenPoints(
+                    (x + shift - 1, y - 1),
+                    (x + shift + 1, y + 1),
+                    components=True,
+                )
+                if len(intersection) > 2:
+                    coordinates.append([shift, y])
+                    break
+                intersection = layer.intersectionsBetweenPoints(
+                    (x + shift + 1, y - 1),
+                    (x + shift - 1, y + 1),
+                    components=True,
+                )
+                if len(intersection) > 2:
+                    coordinates.append([shift, y])
+                    break
+                shift += increment
+                if shift > 1000:
+                    print("ERROR INFINITE WHILE")
+                    break
+        if pair_side == self.constants.right:
+            sb = -sb
+
+        for coordinate in coordinates:
+            coordinate[0] += sb + kerning
+
+        return coordinates
 
 
 if __name__ == "__main__":
     pairs_string = """HH HO AT AV YA УА КО XO LO LV LY Г. Т. 74 \"A \"J K- X- V. Y. K» Т»
 Нн Ho Го Гн Fn Fo Ko Кт Ку Xo Fx To Tn Yo Yn Ту Tv Tx Vo Vn Yo Yn Уо Уд Ул Ун
 нн но vo го то г. т. ko xo yo"""
-
-    pairs_uni = [
-        ("0048", "0048"),
-        ("0048", "004f"),
-        ("0041", "0054"),
-        ("0041", "0056"),
-        ("0059", "0041"),
-        ("0423", "0410"),
-        ("041a", "041e"),
-        ("0058", "004f"),
-        ("004c", "004f"),
-        ("004c", "0056"),
-        ("004c", "0059"),
-        ("0413", "002e"),
-        ("0422", "002e"),
-        ("0037", "0034"),
-        ("0022", "0041"),
-        ("0022", "004a"),
-        ("004b", "002d"),
-        ("0058", "002d"),
-        ("0056", "002e"),
-        ("0059", "002e"),
-        ("004b", "00bb"),
-        ("0422", "00bb"),
-        ("041d", "043d"),
-        ("0048", "006f"),
-        ("0413", "043e"),
-        ("0413", "043d"),
-        ("0046", "006e"),
-        ("0046", "006f"),
-        ("004b", "006f"),
-        ("041a", "0442"),
-        ("041a", "0443"),
-        ("0058", "006f"),
-        ("0046", "0078"),
-        ("0054", "006f"),
-        ("0054", "006e"),
-        ("0059", "006f"),
-        ("0059", "006e"),
-        ("0422", "0443"),
-        ("0054", "0076"),
-        ("0054", "0078"),
-        ("0056", "006f"),
-        ("0056", "006e"),
-        ("0059", "006f"),
-        ("0059", "006e"),
-        ("0423", "043e"),
-        ("0423", "0434"),
-        ("0423", "043b"),
-        ("0423", "043d"),
-        ("043d", "043d"),
-        ("043d", "043e"),
-        ("0076", "006f"),
-        ("0433", "043e"),
-        ("0442", "043e"),
-        ("0433", "002e"),
-        ("0442", "002e"),
-        ("006b", "006f"),
-        ("0078", "006f"),
-        ("0079", "006f"),
-    ]
-
-    # pairs = [
-    #     tuple(
-    #         map(
-    #             lambda g: "{:04x}".format(ord(g)),
-    #             pair,
-    #         )
-    #     )
-    #     for pair in pairs_string.split()
-    # ]
-
-    cmap = {int(g.unicode, 16): g.name for g in font.glyphs if g.unicode}
-
-    pairs = [
-        tuple(
-            map(
-                lambda g: cmap[int(g, 16)],
-                pair,
-            )
-        )
-        for pair in pairs_uni
-    ]
-
-    pairs_from_string = pairs_string.split()
-    for index, pair in enumerate(pairs):
-        area = compute_for_pair(pair)
-        print(pairs_from_string[index], area)
-    Glyphs.showMacroWindow()
+space_calc = PairSpaceCalculator()
+print(space_calc.compute_space("HH"))
+Glyphs.showMacroWindow()
