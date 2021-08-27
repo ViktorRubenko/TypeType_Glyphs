@@ -1,8 +1,9 @@
-# MenuTitle: test 2
+# MenuTitle: WhiteSpace Calculator
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
 import math
+import vanilla
 from shapely.geometry import Polygon
 
 
@@ -40,7 +41,6 @@ class PairSpaceCalculator:
 
     def compute_space(self, pair, use_kerning=True):
         self.font = Glyphs.font
-        pair = pair.decode("utf-8")
         left_glyph, right_glyph = (
             self.font.glyphs[u]
             for u in ("{:04x}".format(ord(g)) for g in pair)
@@ -140,7 +140,7 @@ class PairSpaceCalculator:
                     break
                 shift += increment
                 if shift > 1000:
-                    print("ERROR INFINITE WHILE")
+                    # didn't find contour line
                     break
         if pair_side == self.constants.right:
             sb = -sb
@@ -151,10 +151,56 @@ class PairSpaceCalculator:
         return coordinates
 
 
+class GUI(object):
+    def __init__(self):
+        self.w = vanilla.FloatingWindow(
+            (200, 300),
+            "WhiteSpace Calculator",
+            minSize=(200, 300),
+            maxSize=(500, 600),
+        )
+        self.w.checkBox = vanilla.CheckBox(
+            "auto",
+            "Use kerning",
+            value=True,
+        )
+        self.w.textView = vanilla.TextEditor("auto")
+        self.w.buttonRun = vanilla.Button(
+            "auto", "Run", callback=self.runHandler
+        )
+
+        self.w.addAutoPosSizeRules(
+            [
+                "V:|-[checkBox]-[textView]-[buttonRun]-|",
+                "H:|-[checkBox]-|",
+                "H:|-[textView]-|",
+                "H:|-[buttonRun]-|",
+            ]
+        )
+
+        self.w.open()
+
+    def runHandler(self, sender):
+        use_kerning = self.w.checkBox.get()
+        space_calc = PairSpaceCalculator()
+        p = self.w.textView.get().split()
+        for pair in self.w.textView.get().strip().split():
+            if not pair:
+                continue
+            try:
+                space_area = space_calc.compute_space(
+                    pair=pair, use_kerning=use_kerning
+                )
+                print(pair, ":", int(space_area))
+            except ValueError as error:
+                print(pair, error)
+
+
 if __name__ == "__main__":
     pairs_string = """HH HO AT AV YA УА КО XO LO LV LY Г. Т. 74 \"A \"J K- X- V. Y. K» Т»
 Нн Ho Го Гн Fn Fo Ko Кт Ку Xo Fx To Tn Yo Yn Ту Tv Tx Vo Vn Yo Yn Уо Уд Ул Ун
 нн но vo го то г. т. ko xo yo"""
 space_calc = PairSpaceCalculator()
-print(space_calc.compute_space("HH"))
+# print(space_calc.compute_space("HH"))
+GUI()
 Glyphs.showMacroWindow()
