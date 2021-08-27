@@ -183,7 +183,6 @@ class GUI(object):
     def runHandler(self, sender):
         use_kerning = self.w.checkBox.get()
         space_calc = PairSpaceCalculator()
-        p = self.w.textView.get().split()
         for pair in self.w.textView.get().strip().split():
             if not pair:
                 continue
@@ -194,13 +193,8 @@ class GUI(object):
                 print(pair, ":", int(space_area))
             except ValueError as error:
                 print(pair, error)
+        Glyphs.showMacroWindow()
 
 
 if __name__ == "__main__":
-    pairs_string = """HH HO AT AV YA УА КО XO LO LV LY Г. Т. 74 \"A \"J K- X- V. Y. K» Т»
-Нн Ho Го Гн Fn Fo Ko Кт Ку Xo Fx To Tn Yo Yn Ту Tv Tx Vo Vn Yo Yn Уо Уд Ул Ун
-нн но vo го то г. т. ko xo yo"""
-space_calc = PairSpaceCalculator()
-# print(space_calc.compute_space("HH"))
-GUI()
-Glyphs.showMacroWindow()
+    GUI()
