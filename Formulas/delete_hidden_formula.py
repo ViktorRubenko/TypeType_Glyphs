@@ -68,7 +68,7 @@ def main():
                         not in glyph_names
                     ):
                         log.append(
-                            "AA components, GLYPH {}: {} {}".format(
+                            "AAligned components, GLYPH {}: {} {}".format(
                                 thisGlyph.name,
                                 attribs[attrib],
                                 thisGlyph.__getattribute__(attrib).encode(
@@ -79,7 +79,7 @@ def main():
                         thisGlyph.__setattr__(attrib, None)
                     if thisLayer.__getattribute__(attrib):
                         log.append(
-                            "AA components, LAYER {}/{}: {} {}".format(
+                            "AAligned components, LAYER {}/{}: {} {}".format(
                                 thisGlyph.name,
                                 thisLayer.name,
                                 attribs[attrib],
