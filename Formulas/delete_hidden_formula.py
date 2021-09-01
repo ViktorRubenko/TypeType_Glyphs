@@ -33,7 +33,7 @@ def main():
                     "GLYPH {}: {} {}".format(
                         thisGlyph.name,
                         attribs[attrib],
-                        thisGlyph.__getattribute__(attrib),
+                        thisGlyph.__getattribute__(attrib).encode("utf-8"),
                     )
                 )
                 thisGlyph.__setattr__(attrib, None)
@@ -71,7 +71,9 @@ def main():
                             "AA components, GLYPH {}: {} {}".format(
                                 thisGlyph.name,
                                 attribs[attrib],
-                                thisGlyph.__getattribute__(attrib),
+                                thisGlyph.__getattribute__(attrib).encode(
+                                    "utf-8"
+                                ),
                             )
                         )
                         thisGlyph.__setattr__(attrib, None)
@@ -81,7 +83,9 @@ def main():
                                 thisGlyph.name,
                                 thisLayer.name,
                                 attribs[attrib],
-                                thisLayer.__getattribute__(attrib),
+                                thisLayer.__getattribute__(attrib).encode(
+                                    "utf-8"
+                                ),
                             )
                         )
                         thisLayer.__setattr__(attrib, None)
