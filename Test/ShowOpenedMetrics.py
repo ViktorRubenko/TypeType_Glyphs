@@ -23,17 +23,17 @@ from AppKit import (
 )
 
 textbox_width = 100
-textbox_gap = 15
+textbox_gap = 5
 textbox_height = 30
 
 metrics_keys = ("LSB", "RSB", "Width", "LF", "RF", "WF")
 
 
-def new_textbox(frame, text):
-    new_textbox = NSTextField.alloc().initWithFrame_(frame)
-    new_textbox.setTranslatesAutoresizingMaskIntoConstraints_(False)
+def create_textEdit(frame, text):
+    new_textEdit = NSTextField.alloc().initWithFrame_(frame)
+    new_textEdit.setTranslatesAutoresizingMaskIntoConstraints_(False)
     constraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
-        new_textbox,
+        new_textEdit,
         NSLayoutAttributeWidth,
         NSLayoutRelationEqual,
         None,
@@ -42,9 +42,17 @@ def new_textbox(frame, text):
         textbox_width,
     )
     if text:
-        new_textbox.setStringValue_(text)
-    new_textbox.addConstraint_(constraint)
-    return new_textbox
+        new_textEdit.setStringValue_(text)
+    new_textEdit.addConstraint_(constraint)
+    return new_textEdit
+
+
+def create_textBox(frame, text):
+    new_textBox = create_textEdit(frame, text)
+    new_textBox.setDrawsBackground_(False)
+    new_textBox.setBezeled_(False)
+    new_textBox.setEditable_(False)
+    return new_textBox
 
 
 class MetricsWindow:
@@ -97,7 +105,22 @@ class MetricsWindow:
 
         self.setup_textedits()
 
-        self.w.scrollView = ScrollView((10, 10, -10, -10), self.view)
+        height = 180
+        height_start = 5
+        for metric_key in ["Glyph"] + list(metrics_keys):
+            text_edit = create_textBox(
+                NSMakeRect(
+                    5,
+                    height - height_start - textbox_height - textbox_gap,
+                    textbox_width,
+                    textbox_height,
+                ),
+                metric_key,
+            )
+            self.w._getContentView().addSubview_(text_edit)
+            height -= textbox_height - 10
+
+        self.w.scrollView = ScrollView((60, 10, -10, -10), self.view)
 
         self.w.center()
         self.w.open()
@@ -107,16 +130,14 @@ class MetricsWindow:
         width_start = 5
         height_start = 0
         quantity = len(self.data)
-        width = quantity * (textbox_width + textbox_gap)
-        print(self.widthConstraint)
+        width = quantity * (textbox_width + textbox_gap) + textbox_gap * 2
         self.widthConstraint.setConstant_(width)
-        print(self.widthConstraint)
         if quantity == 0:
             return
         self.textEdit_container.setSubviews_([])
         for glyph_name, metrics in self.data.items():
             height = 160
-            text_edit = new_textbox(
+            text_edit = create_textBox(
                 NSMakeRect(
                     width_start,
                     height - height_start - textbox_height,
@@ -128,10 +149,10 @@ class MetricsWindow:
             self.textEdit_container.addSubview_(text_edit)
             height -= textbox_height - 10
             for metric_key in metrics_keys:
-                text_edit = new_textbox(
+                text_edit = create_textEdit(
                     NSMakeRect(
                         width_start,
-                        height - height_start - textbox_height,
+                        height - height_start - textbox_height - textbox_gap,
                         textbox_width,
                         height,
                     ),
@@ -141,6 +162,13 @@ class MetricsWindow:
                 height -= textbox_height - 10
             width_start += textbox_width + textbox_gap
         self.view.invalidateIntrinsicContentSize()
+        for subview_index, subview in enumerate(
+            self.textEdit_container.subviews()
+        ):
+            if subview_index % 7 == 0:
+                print("glyph:", subview.stringValue())
+            else:
+                print(subview.stringValue())
 
     def load_data(self):
         font = Glyphs.font
@@ -155,7 +183,6 @@ class MetricsWindow:
                     "RF": layer.rightMetricsKey,
                     "WF": layer.widthMetricsKey,
                 }
-        print(self.data)
 
     @staticmethod
     def _size_from_screen():
