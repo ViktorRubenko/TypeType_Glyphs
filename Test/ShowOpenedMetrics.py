@@ -1,15 +1,13 @@
-# MenuTitle: Show opened glyphs metrics
+# MenuTitle: Show opened glyphs metrics copy
 # -*- coding: utf-8 -*-
 
 
 from vanilla import *
 from AppKit import (
     NSScreen,
+    NSScrollView,
     NSView,
     NSTextField,
-    NSMiniControlSize,
-    NSShadowlessSquareBezelStyle,
-    NSCircularBezelStyle,
     NSLayoutConstraint,
     NSLayoutAttributeHeight,
     NSLayoutAttributeWidth,
@@ -18,19 +16,21 @@ from AppKit import (
     NSLayoutAttributeTrailing,
     NSLayoutAttributeBottom,
     NSLayoutRelationEqual,
-    NSLineBreakByTruncatingTail,
-    NSLayoutConstraintOrientationHorizontal,
+    NSColor,
+    NSRectFill,
+    NSCenterTextAlignment,
 )
 
-textbox_width = 100
+textbox_width = 40
 textbox_gap = 5
-textbox_height = 30
+textbox_height = 20
+glyph_container_width = 100
 
-metrics_keys = ("LSB", "RSB", "Width", "LF", "RF", "WF")
+metrics_keys = ("LSB", "RSB", "Width", "LF", "RF", "WF", "GLF", "GRF", "GWF")
 
 
-def create_textEdit(frame, text):
-    new_textEdit = NSTextField.alloc().initWithFrame_(frame)
+def create_textEdit(text):
+    new_textEdit = NSTextField.alloc().init()
     new_textEdit.setTranslatesAutoresizingMaskIntoConstraints_(False)
     constraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
         new_textEdit,
@@ -47,130 +47,360 @@ def create_textEdit(frame, text):
     return new_textEdit
 
 
-def create_textBox(frame, text):
-    new_textBox = create_textEdit(frame, text)
+def create_textBox(text):
+    new_textBox = create_textEdit(text)
     new_textBox.setDrawsBackground_(False)
     new_textBox.setBezeled_(False)
     new_textBox.setEditable_(False)
     return new_textBox
 
 
+def create_line(color):
+    line = NSView.alloc().init()
+    line.setBackgroundColor_(color)
+    line.setTranslatesAutoresizingMaskIntoConstraints_(False)
+    return line
+
+
+def create_scroll_data_container(data_container):
+    scroll_view = NSScrollView.alloc().init()
+    scroll_view.setTranslatesAutoresizingMaskIntoConstraints_(False)
+    scroll_view.setHasHorizontalScroller_(True)
+    scroll_view.setDocumentView_(data_container)
+
+    scroll_view.addConstraint_(
+        NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+            data_container,
+            NSLayoutAttributeLeading,
+            NSLayoutRelationEqual,
+            scroll_view,
+            NSLayoutAttributeLeading,
+            1.0,
+            0,
+        )
+    )
+    scroll_view.addConstraint_(
+        NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+            data_container,
+            NSLayoutAttributeTop,
+            NSLayoutRelationEqual,
+            scroll_view,
+            NSLayoutAttributeTop,
+            1.0,
+            0,
+        )
+    )
+    scroll_view.addConstraint_(
+        NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+            data_container,
+            NSLayoutAttributeBottom,
+            NSLayoutRelationEqual,
+            scroll_view,
+            NSLayoutAttributeBottom,
+            1.0,
+            0,
+        )
+    )
+    scroll_view.setBackgroundColor_(NSColor.yellowColor())
+
+    return scroll_view
+
+
 class MetricsWindow:
     def __init__(self):
         self.data = {}
+        self.glyph_containers = []
+        self.height = (
+            len(metrics_keys) * (textbox_height + 2) + textbox_height + 15
+        )
         self.screen_size = NSScreen.mainScreen().frame().size
-        self.w = Window((self.screen_size.width * 0.8, 180))
-        self.view = NSView.alloc().initWithFrame_(NSMakeRect(0, 0, 180, 160))
-        self.view.setTranslatesAutoresizingMaskIntoConstraints_(False)
-        self.widthConstraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
-            self.view,
+        self.w = Window(
+            (
+                self.screen_size.width * 0.8,
+                self.height,
+            )
+        )
+        self.contentView = self.w._getContentView()
+
+        self.glyph_textBox = create_textBox("Glyph")
+
+        self.hor_line_1 = create_line(NSColor.grayColor())
+        self.ver_line_1 = create_line(NSColor.grayColor())
+
+        self.data_container = NSView.alloc().init()
+        self.data_container.setTranslatesAutoresizingMaskIntoConstraints_(
+            False
+        )
+        self.data_container_width_constraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+            self.data_container,
             NSLayoutAttributeWidth,
             NSLayoutRelationEqual,
             None,
             0,
             1.0,
-            0,
+            len(self.data) * (110),
         )
-        self.view.addConstraint_(self.widthConstraint)
-
-        self.textEdit_container = NSView.alloc().initWithFrame_(
-            NSMakeRect(0, 0, 180, 160)
+        self.scroll_data_container = create_scroll_data_container(
+            self.data_container
         )
-        self.textEdit_container.setTranslatesAutoresizingMaskIntoConstraints_(
-            False
+        self.scroll_data_container.addConstraint_(
+            self.data_container_width_constraint
         )
+        print(self.data_container_width_constraint)
 
-        self.view.addSubview_(self.textEdit_container)
-        constraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
-            self.view,
-            NSLayoutAttributeLeading,
-            NSLayoutRelationEqual,
-            self.textEdit_container,
-            NSLayoutAttributeLeading,
-            1.0,
-            0,
-        )
-        self.view.addConstraint_(constraint)
+        self.contentView.addSubview_(self.glyph_textBox)
+        self.contentView.addSubview_(self.hor_line_1)
+        self.contentView.addSubview_(self.ver_line_1)
+        self.contentView.addSubview_(self.scroll_data_container)
 
-        constraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
-            self.view,
-            NSLayoutAttributeTrailing,
-            NSLayoutRelationEqual,
-            self.textEdit_container,
-            NSLayoutAttributeTrailing,
-            1.0,
-            15,
-        )
-        self.view.addConstraint_(constraint)
+        self._set_constraints()
 
-        self.setup_textedits()
-
-        height = 180
-        height_start = 5
-        for metric_key in ["Glyph"] + list(metrics_keys):
-            text_edit = create_textBox(
-                NSMakeRect(
-                    5,
-                    height - height_start - textbox_height - textbox_gap,
+        textboxes = [create_textBox(metric_key) for metric_key in metrics_keys]
+        for index, textbox in enumerate(textboxes):
+            self.contentView.addSubview_(textbox)
+            if index == 0:
+                self.contentView.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        textbox,
+                        NSLayoutAttributeTop,
+                        NSLayoutRelationEqual,
+                        self.hor_line_1,
+                        NSLayoutAttributeTop,
+                        1.0,
+                        5,
+                    )
+                )
+            else:
+                self.contentView.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        textbox,
+                        NSLayoutAttributeTop,
+                        NSLayoutRelationEqual,
+                        textboxes[index - 1],
+                        NSLayoutAttributeBottom,
+                        1.0,
+                        2,
+                    )
+                )
+            self.contentView.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    textbox,
+                    NSLayoutAttributeWidth,
+                    NSLayoutRelationEqual,
+                    None,
+                    0,
+                    1.0,
                     textbox_width,
-                    textbox_height,
-                ),
-                metric_key,
+                )
             )
-            self.w._getContentView().addSubview_(text_edit)
-            height -= textbox_height - 10
+            self.contentView.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    textbox,
+                    NSLayoutAttributeHeight,
+                    NSLayoutRelationEqual,
+                    None,
+                    0,
+                    1.0,
+                    textbox_height,
+                )
+            )
+            self.contentView.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    textbox,
+                    NSLayoutAttributeLeading,
+                    NSLayoutRelationEqual,
+                    self.glyph_textBox,
+                    NSLayoutAttributeLeading,
+                    1.0,
+                    0,
+                )
+            )
 
-        self.w.scrollView = ScrollView((60, 10, -10, -10), self.view)
+        self.reload_glyphs()
 
-        self.w.center()
         self.w.open()
 
-    def setup_textedits(self):
-        self.load_data()
-        width_start = 5
-        height_start = 0
-        quantity = len(self.data)
-        width = quantity * (textbox_width + textbox_gap) + textbox_gap * 2
-        self.widthConstraint.setConstant_(width)
-        if quantity == 0:
-            return
-        self.textEdit_container.setSubviews_([])
-        for glyph_name, metrics in self.data.items():
-            height = 160
-            text_edit = create_textBox(
-                NSMakeRect(
-                    width_start,
-                    height - height_start - textbox_height,
-                    textbox_width,
-                    height,
-                ),
-                glyph_name,
+    def _set_constraints(self):
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.glyph_textBox,
+                NSLayoutAttributeTop,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeTop,
+                1.0,
+                5,
             )
-            self.textEdit_container.addSubview_(text_edit)
-            height -= textbox_height - 10
-            for metric_key in metrics_keys:
-                text_edit = create_textEdit(
-                    NSMakeRect(
-                        width_start,
-                        height - height_start - textbox_height - textbox_gap,
-                        textbox_width,
-                        height,
-                    ),
-                    metrics[metric_key],
-                )
-                self.textEdit_container.addSubview_(text_edit)
-                height -= textbox_height - 10
-            width_start += textbox_width + textbox_gap
-        self.view.invalidateIntrinsicContentSize()
-        for subview_index, subview in enumerate(
-            self.textEdit_container.subviews()
-        ):
-            if subview_index % 7 == 0:
-                print("glyph:", subview.stringValue())
-            else:
-                print(subview.stringValue())
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.glyph_textBox,
+                NSLayoutAttributeWidth,
+                NSLayoutRelationEqual,
+                None,
+                0,
+                1.0,
+                textbox_width,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.glyph_textBox,
+                NSLayoutAttributeHeight,
+                NSLayoutRelationEqual,
+                None,
+                0,
+                1.0,
+                textbox_height,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.glyph_textBox,
+                NSLayoutAttributeLeading,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeLeading,
+                1.0,
+                5,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_1,
+                NSLayoutAttributeTop,
+                NSLayoutRelationEqual,
+                self.glyph_textBox,
+                NSLayoutAttributeBottom,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_1,
+                NSLayoutAttributeTrailing,
+                NSLayoutRelationEqual,
+                self.glyph_textBox,
+                NSLayoutAttributeTrailing,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_1,
+                NSLayoutAttributeHeight,
+                NSLayoutRelationEqual,
+                None,
+                0,
+                1.0,
+                1,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_1,
+                NSLayoutAttributeLeading,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeLeading,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.ver_line_1,
+                NSLayoutAttributeLeading,
+                NSLayoutRelationEqual,
+                self.hor_line_1,
+                NSLayoutAttributeTrailing,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.ver_line_1,
+                NSLayoutAttributeTop,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeTop,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.ver_line_1,
+                NSLayoutAttributeBottom,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeBottom,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.ver_line_1,
+                NSLayoutAttributeWidth,
+                NSLayoutRelationEqual,
+                None,
+                0,
+                1.0,
+                1,
+            )
+        )
 
-    def load_data(self):
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.scroll_data_container,
+                NSLayoutAttributeLeading,
+                NSLayoutRelationEqual,
+                self.ver_line_1,
+                NSLayoutAttributeTrailing,
+                1.0,
+                5,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.scroll_data_container,
+                NSLayoutAttributeTop,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeTop,
+                1.0,
+                5,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.scroll_data_container,
+                NSLayoutAttributeBottom,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeBottom,
+                1.0,
+                -5,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.scroll_data_container,
+                NSLayoutAttributeTrailing,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeTrailing,
+                1.0,
+                -5,
+            )
+        )
+
+    def reload_glyphs(self):
+        self.data = {}
         font = Glyphs.font
         current_tab = font.currentTab
         if current_tab:
@@ -182,7 +412,136 @@ class MetricsWindow:
                     "LF": layer.leftMetricsKey,
                     "RF": layer.rightMetricsKey,
                     "WF": layer.widthMetricsKey,
+                    "GLF": layer.parent.leftMetricsKey,
+                    "GRF": layer.parent.rightMetricsKey,
+                    "GWF": layer.parent.widthMetricsKey,
                 }
+        print(self.data)
+        self.reload_glyphs_ui()
+
+    def reload_glyphs_ui(self):
+        self.glyph_containers = []
+        self.data_container.setSubviews_([])
+        for glyph_name, metrics in self.data.items():
+            glyph_container = NSView.alloc().init()
+            glyph_container.setTranslatesAutoresizingMaskIntoConstraints_(
+                False
+            )
+            glyph_container.setBackgroundColor_(NSColor.redColor())
+            self.glyph_containers.append(glyph_container)
+            self.data_container.addSubview_(glyph_container)
+
+            name_textbox = create_textBox(glyph_name)
+            name_textbox.setAlignment_(NSCenterTextAlignment)
+            glyph_container.addSubview_(name_textbox)
+
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    name_textbox,
+                    NSLayoutAttributeLeading,
+                    NSLayoutRelationEqual,
+                    glyph_container,
+                    NSLayoutAttributeLeading,
+                    1.0,
+                    0,
+                )
+            )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    name_textbox,
+                    NSLayoutAttributeTrailing,
+                    NSLayoutRelationEqual,
+                    glyph_container,
+                    NSLayoutAttributeTrailing,
+                    1.0,
+                    0,
+                )
+            )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    name_textbox,
+                    NSLayoutAttributeTop,
+                    NSLayoutRelationEqual,
+                    glyph_container,
+                    NSLayoutAttributeTop,
+                    1.0,
+                    0,
+                )
+            )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    name_textbox,
+                    NSLayoutAttributeHeight,
+                    NSLayoutRelationEqual,
+                    None,
+                    0,
+                    1.0,
+                    textbox_height,
+                )
+            )
+
+        for index, glyph_container in enumerate(self.glyph_containers):
+            if index == 0:
+                self.contentView.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        glyph_container,
+                        NSLayoutAttributeLeading,
+                        NSLayoutRelationEqual,
+                        self.data_container,
+                        NSLayoutAttributeLeading,
+                        1.0,
+                        5,
+                    )
+                )
+            else:
+                self.contentView.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        glyph_container,
+                        NSLayoutAttributeLeading,
+                        NSLayoutRelationEqual,
+                        self.glyph_containers[index - 1],
+                        NSLayoutAttributeTrailing,
+                        1.0,
+                        5,
+                    )
+                )
+            self.contentView.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    glyph_container,
+                    NSLayoutAttributeTop,
+                    NSLayoutRelationEqual,
+                    self.data_container,
+                    NSLayoutAttributeTop,
+                    1.0,
+                    0,
+                )
+            )
+            self.contentView.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    glyph_container,
+                    NSLayoutAttributeBottom,
+                    NSLayoutRelationEqual,
+                    self.data_container,
+                    NSLayoutAttributeBottom,
+                    1.0,
+                    0,
+                )
+            )
+            self.contentView.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    glyph_container,
+                    NSLayoutAttributeWidth,
+                    NSLayoutRelationEqual,
+                    None,
+                    0,
+                    1.0,
+                    glyph_container_width,
+                )
+            )
+
+        width = len(self.data) * (glyph_container_width + 5) + 5
+        self.data_container_width_constraint.setConstant_(width)
+        self.data_container.invalidateIntrinsicContentSize()
 
     @staticmethod
     def _size_from_screen():
