@@ -165,18 +165,11 @@ class MetricsWindow:
             self.data_container_width_constraint
         )
 
-        # self.apply_button = NSButton.alloc().init()
-        # self.apply_button.setBezelStyle_(NSRegularSquareBezelStyle)
-        # self.apply_button.setControlSize_(NSMiniControlSize)
-        # self.apply_button.setTitle_("Apply")
-        # self.apply_button.setTarget_(self)
-        # self.apply_button.setTranslatesAutoresizingMaskIntoConstraints_(False)
-        # self.apply_button.setContentCompressionResistancePriority_forOrientation_(
-        #     100, NSLayoutConstraintOrientationHorizontal
-        # )
-
-        self.w.button = Button(
+        self.w.apply_button = Button(
             (10, -30, 60, 20), "Apply", callback=self.apply_metrics_
+        )
+        self.w.update_button = Button(
+            (-70, -30, 60, 20), "Refresh", callback=self.refresh_
         )
 
         self.contentView.addSubview_(self.glyph_textBox)
@@ -895,6 +888,9 @@ class MetricsWindow:
                     print(glyph.name, "INVALID VALUES")
                     continue
 
+        self.reload_glyphs()
+
+    def refresh_(self, sender):
         self.reload_glyphs()
 
     @staticmethod
