@@ -524,6 +524,7 @@ class MetricsWindow:
         if current_tab:
             for layer in current_tab.layers:
                 layer.syncMetrics()
+                layer.updateMetrics()
                 self.glyph_order.append(layer.parent.name)
                 self.data[layer.parent.name] = {
                     "RSB": {
@@ -860,19 +861,28 @@ class MetricsWindow:
                     continue
                 metrics = self.data[glyph.name]
 
-                layer.LSB = self._get_field_value(metrics["LSB"]["object"])
-                layer.RSB = self._get_field_value(metrics["RSB"]["object"])
-                layer.width = self._get_field_value(metrics["Width"]["object"])
-
                 try:
+                    layer.LSB = self._get_field_value(
+                        metrics["LSB"]["object"],
+                        force_float=True,
+                    )
+                    layer.RSB = self._get_field_value(
+                        metrics["RSB"]["object"],
+                        force_float=True,
+                    )
+                    layer.width = self._get_field_value(
+                        metrics["Width"]["object"],
+                        force_float=True,
+                    )
+
                     layer.leftMetricsKey = self._get_field_value(
-                        metrics["L LF"]["object"]
+                        metrics["L LF"]["object"],
                     )
                     layer.rightMetricsKey = self._get_field_value(
-                        metrics["L RF"]["object"]
+                        metrics["L RF"]["object"],
                     )
                     layer.widthMetricsKey = self._get_field_value(
-                        metrics["L WF"]["object"]
+                        metrics["L WF"]["object"],
                     )
 
                     glyph.leftMetricsKey = self._get_field_value(
@@ -886,6 +896,7 @@ class MetricsWindow:
                     )
                 except Exception as e:
                     print(glyph.name, "INVALID VALUES")
+                    Glyphs.showMacroWindow()
                     continue
 
         self.reload_glyphs()
@@ -899,12 +910,18 @@ class MetricsWindow:
         return int(size.width * 0.55), int(size.height * 0.8)
 
     @staticmethod
-    def _get_field_value(field):
+    def _get_field_value(field, force_float=False):
         string_value = field.stringValue()
-        return string_value if string_value else None
+        if force_float:
+            print(string_value, float(string_value) if string_value else 0)
+            return float(string_value) if string_value else 0
+        if len(string_value) == 0:
+            return None
+        return string_value
 
 
 def main():
+    Glyphs.clearLog()
     MetricsWindow()
 
 
