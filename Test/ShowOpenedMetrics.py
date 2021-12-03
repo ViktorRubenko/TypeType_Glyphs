@@ -1,4 +1,4 @@
-# MenuTitle: Show opened glyphs metrics copy
+# MenuTitle: Show opened glyphs metrics
 # -*- coding: utf-8 -*-
 
 
