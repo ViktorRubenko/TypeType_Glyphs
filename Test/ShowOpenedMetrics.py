@@ -101,7 +101,7 @@ def create_scroll_data_container(data_container):
             0,
         )
     )
-    scroll_view.setBackgroundColor_(NSColor.yellowColor())
+    # scroll_view.setBackgroundColor_(NSColor.yellowColor())
 
     return scroll_view
 
@@ -146,7 +146,6 @@ class MetricsWindow:
         self.scroll_data_container.addConstraint_(
             self.data_container_width_constraint
         )
-        print(self.data_container_width_constraint)
 
         self.contentView.addSubview_(self.glyph_textBox)
         self.contentView.addSubview_(self.hor_line_1)
@@ -165,7 +164,7 @@ class MetricsWindow:
                         NSLayoutAttributeTop,
                         NSLayoutRelationEqual,
                         self.hor_line_1,
-                        NSLayoutAttributeTop,
+                        NSLayoutAttributeBottom,
                         1.0,
                         5,
                     )
@@ -328,7 +327,7 @@ class MetricsWindow:
                 self.contentView,
                 NSLayoutAttributeTop,
                 1.0,
-                0,
+                5,
             )
         )
         self.contentView.addConstraint_(
@@ -339,7 +338,7 @@ class MetricsWindow:
                 self.contentView,
                 NSLayoutAttributeBottom,
                 1.0,
-                0,
+                -5,
             )
         )
         self.contentView.addConstraint_(
@@ -362,7 +361,7 @@ class MetricsWindow:
                 self.ver_line_1,
                 NSLayoutAttributeTrailing,
                 1.0,
-                5,
+                0,
             )
         )
         self.contentView.addConstraint_(
@@ -395,7 +394,7 @@ class MetricsWindow:
                 self.contentView,
                 NSLayoutAttributeTrailing,
                 1.0,
-                -5,
+                0,
             )
         )
 
@@ -427,13 +426,15 @@ class MetricsWindow:
             glyph_container.setTranslatesAutoresizingMaskIntoConstraints_(
                 False
             )
-            glyph_container.setBackgroundColor_(NSColor.redColor())
+            # glyph_container.setBackgroundColor_(NSColor.redColor())
             self.glyph_containers.append(glyph_container)
             self.data_container.addSubview_(glyph_container)
 
             name_textbox = create_textBox(glyph_name)
             name_textbox.setAlignment_(NSCenterTextAlignment)
+            hor_line = create_line(NSColor.grayColor())
             glyph_container.addSubview_(name_textbox)
+            glyph_container.addSubview_(hor_line)
 
             glyph_container.addConstraint_(
                 NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
@@ -479,10 +480,119 @@ class MetricsWindow:
                     textbox_height,
                 )
             )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    hor_line,
+                    NSLayoutAttributeHeight,
+                    NSLayoutRelationEqual,
+                    None,
+                    0,
+                    1.0,
+                    1,
+                )
+            )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    hor_line,
+                    NSLayoutAttributeTop,
+                    NSLayoutRelationEqual,
+                    name_textbox,
+                    NSLayoutAttributeBottom,
+                    1.0,
+                    0,
+                )
+            )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    hor_line,
+                    NSLayoutAttributeLeading,
+                    NSLayoutRelationEqual,
+                    glyph_container,
+                    NSLayoutAttributeLeading,
+                    1.0,
+                    0,
+                )
+            )
+            glyph_container.addConstraint_(
+                NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                    hor_line,
+                    NSLayoutAttributeWidth,
+                    NSLayoutRelationEqual,
+                    glyph_container,
+                    NSLayoutAttributeWidth,
+                    1.0,
+                    1,
+                )
+            )
+
+            textFields = [
+                create_textEdit(metrics[metric_key])
+                for metric_key in metrics_keys
+            ]
+
+            for index, textfield in enumerate(textFields):
+                glyph_container.addSubview_(textfield)
+                if index == 0:
+                    glyph_container.addConstraint_(
+                        NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                            textfield,
+                            NSLayoutAttributeTop,
+                            NSLayoutRelationEqual,
+                            hor_line,
+                            NSLayoutAttributeBottom,
+                            1.0,
+                            5,
+                        )
+                    )
+                else:
+                    glyph_container.addConstraint_(
+                        NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                            textfield,
+                            NSLayoutAttributeTop,
+                            NSLayoutRelationEqual,
+                            textFields[index - 1],
+                            NSLayoutAttributeBottom,
+                            1.0,
+                            2,
+                        )
+                    )
+                glyph_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        textfield,
+                        NSLayoutAttributeTrailing,
+                        NSLayoutRelationEqual,
+                        glyph_container,
+                        NSLayoutAttributeTrailing,
+                        1.0,
+                        -2,
+                    )
+                )
+                glyph_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        textfield,
+                        NSLayoutAttributeHeight,
+                        NSLayoutRelationEqual,
+                        None,
+                        0,
+                        1.0,
+                        textbox_height,
+                    )
+                )
+                glyph_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        textfield,
+                        NSLayoutAttributeLeading,
+                        NSLayoutRelationEqual,
+                        glyph_container,
+                        NSLayoutAttributeLeading,
+                        1.0,
+                        2,
+                    )
+                )
 
         for index, glyph_container in enumerate(self.glyph_containers):
             if index == 0:
-                self.contentView.addConstraint_(
+                self.data_container.addConstraint_(
                     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
                         glyph_container,
                         NSLayoutAttributeLeading,
@@ -490,22 +600,70 @@ class MetricsWindow:
                         self.data_container,
                         NSLayoutAttributeLeading,
                         1.0,
-                        5,
+                        0,
                     )
                 )
             else:
-                self.contentView.addConstraint_(
+                container_separator = create_line(NSColor.grayColor())
+                self.data_container.addSubview_(container_separator)
+
+                self.data_container.addConstraint_(
                     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
-                        glyph_container,
+                        container_separator,
                         NSLayoutAttributeLeading,
                         NSLayoutRelationEqual,
                         self.glyph_containers[index - 1],
                         NSLayoutAttributeTrailing,
                         1.0,
-                        5,
+                        0,
                     )
                 )
-            self.contentView.addConstraint_(
+                self.data_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        container_separator,
+                        NSLayoutAttributeWidth,
+                        NSLayoutRelationEqual,
+                        None,
+                        0,
+                        1.0,
+                        1,
+                    )
+                )
+                self.data_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        container_separator,
+                        NSLayoutAttributeTop,
+                        NSLayoutRelationEqual,
+                        glyph_container,
+                        NSLayoutAttributeTop,
+                        1.0,
+                        0,
+                    )
+                )
+                self.data_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        container_separator,
+                        NSLayoutAttributeBottom,
+                        NSLayoutRelationEqual,
+                        glyph_container,
+                        NSLayoutAttributeBottom,
+                        1.0,
+                        0,
+                    )
+                )
+
+                self.data_container.addConstraint_(
+                    NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                        glyph_container,
+                        NSLayoutAttributeLeading,
+                        NSLayoutRelationEqual,
+                        container_separator,
+                        NSLayoutAttributeTrailing,
+                        1.0,
+                        0,
+                    )
+                )
+            self.data_container.addConstraint_(
                 NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
                     glyph_container,
                     NSLayoutAttributeTop,
@@ -516,7 +674,7 @@ class MetricsWindow:
                     0,
                 )
             )
-            self.contentView.addConstraint_(
+            self.data_container.addConstraint_(
                 NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
                     glyph_container,
                     NSLayoutAttributeBottom,
@@ -527,7 +685,7 @@ class MetricsWindow:
                     0,
                 )
             )
-            self.contentView.addConstraint_(
+            self.data_container.addConstraint_(
                 NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
                     glyph_container,
                     NSLayoutAttributeWidth,
@@ -539,7 +697,7 @@ class MetricsWindow:
                 )
             )
 
-        width = len(self.data) * (glyph_container_width + 5) + 5
+        width = len(self.data) * (glyph_container_width + 1)
         self.data_container_width_constraint.setConstant_(width)
         self.data_container.invalidateIntrinsicContentSize()
 
