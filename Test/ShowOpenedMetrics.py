@@ -17,7 +17,6 @@ from AppKit import (
     NSLayoutAttributeBottom,
     NSLayoutRelationEqual,
     NSColor,
-    NSRectFill,
     NSCenterTextAlignment,
 )
 
@@ -25,8 +24,19 @@ textbox_width = 40
 textbox_gap = 5
 textbox_height = 20
 glyph_container_width = 100
+button_height = 25
 
-metrics_keys = ("LSB", "RSB", "Width", "LF", "RF", "WF", "GLF", "GRF", "GWF")
+metrics_keys = (
+    "LSB",
+    "RSB",
+    "Width",
+    "L LF",
+    "L RF",
+    "L WF",
+    "G LF",
+    "G RF",
+    "G WF",
+)
 
 
 def create_textEdit(text):
@@ -108,24 +118,32 @@ def create_scroll_data_container(data_container):
 
 class MetricsWindow:
     def __init__(self):
+        self.font = None
         self.data = {}
-        self.glyph_containers = []
+        self.glyph_order = []
+        self.glyph_containers = {}
         self.height = (
-            len(metrics_keys) * (textbox_height + 2) + textbox_height + 15
+            len(metrics_keys) * (textbox_height + 2)
+            + textbox_height
+            + button_height
+            + 5
         )
         self.screen_size = NSScreen.mainScreen().frame().size
-        self.w = Window(
+        self.w = FloatingWindow(
             (
-                self.screen_size.width * 0.8,
-                self.height,
+                self.screen_size.width * 0.6,
+                self.height + 15,
             )
         )
+        self.w.minSize = (100, self.height + 15)
+        self.w.maxSize = (self.screen_size.width * 0.8, self.height + 15)
         self.contentView = self.w._getContentView()
 
         self.glyph_textBox = create_textBox("Glyph")
 
         self.hor_line_1 = create_line(NSColor.grayColor())
         self.ver_line_1 = create_line(NSColor.grayColor())
+        self.hor_line_2 = create_line(NSColor.grayColor())
 
         self.data_container = NSView.alloc().init()
         self.data_container.setTranslatesAutoresizingMaskIntoConstraints_(
@@ -147,10 +165,26 @@ class MetricsWindow:
             self.data_container_width_constraint
         )
 
+        # self.apply_button = NSButton.alloc().init()
+        # self.apply_button.setBezelStyle_(NSRegularSquareBezelStyle)
+        # self.apply_button.setControlSize_(NSMiniControlSize)
+        # self.apply_button.setTitle_("Apply")
+        # self.apply_button.setTarget_(self)
+        # self.apply_button.setTranslatesAutoresizingMaskIntoConstraints_(False)
+        # self.apply_button.setContentCompressionResistancePriority_forOrientation_(
+        #     100, NSLayoutConstraintOrientationHorizontal
+        # )
+
+        self.w.button = Button(
+            (10, -30, 60, 20), "Apply", callback=self.apply_metrics_
+        )
+
         self.contentView.addSubview_(self.glyph_textBox)
         self.contentView.addSubview_(self.hor_line_1)
         self.contentView.addSubview_(self.ver_line_1)
         self.contentView.addSubview_(self.scroll_data_container)
+        self.contentView.addSubview_(self.hor_line_2)
+        # self.contentView.addSubview_(self.apply_button)
 
         self._set_constraints()
 
@@ -333,12 +367,12 @@ class MetricsWindow:
         self.contentView.addConstraint_(
             NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
                 self.ver_line_1,
-                NSLayoutAttributeBottom,
+                NSLayoutAttributeHeight,
                 NSLayoutRelationEqual,
-                self.contentView,
-                NSLayoutAttributeBottom,
+                None,
+                0,
                 1.0,
-                -5,
+                self.height - button_height,
             )
         )
         self.contentView.addConstraint_(
@@ -380,10 +414,10 @@ class MetricsWindow:
                 self.scroll_data_container,
                 NSLayoutAttributeBottom,
                 NSLayoutRelationEqual,
-                self.contentView,
+                self.ver_line_1,
                 NSLayoutAttributeBottom,
                 1.0,
-                -5,
+                0,
             )
         )
         self.contentView.addConstraint_(
@@ -397,37 +431,156 @@ class MetricsWindow:
                 0,
             )
         )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_2,
+                NSLayoutAttributeTop,
+                NSLayoutRelationEqual,
+                self.ver_line_1,
+                NSLayoutAttributeBottom,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_2,
+                NSLayoutAttributeLeading,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeLeading,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_2,
+                NSLayoutAttributeTrailing,
+                NSLayoutRelationEqual,
+                self.contentView,
+                NSLayoutAttributeTrailing,
+                1.0,
+                0,
+            )
+        )
+        self.contentView.addConstraint_(
+            NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+                self.hor_line_2,
+                NSLayoutAttributeHeight,
+                NSLayoutRelationEqual,
+                None,
+                0,
+                1.0,
+                1,
+            )
+        )
+
+        # Button
+        # self.contentView.addConstraint_(
+        #     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+        #         self.apply_button,
+        #         NSLayoutAttributeHeight,
+        #         NSLayoutRelationEqual,
+        #         None,
+        #         0,
+        #         1.0,
+        #         button_height,
+        #     )
+        # )
+        # self.contentView.addConstraint_(
+        #     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+        #         self.apply_button,
+        #         NSLayoutAttributeLeading,
+        #         NSLayoutRelationEqual,
+        #         self.contentView,
+        #         NSLayoutAttributeLeading,
+        #         1.0,
+        #         5,
+        #     )
+        # )
+        # self.contentView.addConstraint_(
+        #     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+        #         self.apply_button,
+        #         NSLayoutAttributeWidth,
+        #         NSLayoutRelationEqual,
+        #         None,
+        #         0,
+        #         1.0,
+        #         50,
+        #     )
+        # )
+        # self.contentView.addConstraint_(
+        #     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
+        #         self.apply_button,
+        #         NSLayoutAttributeBottom,
+        #         NSLayoutRelationEqual,
+        #         self.contentView,
+        #         NSLayoutAttributeBottom,
+        #         1.0,
+        #         -5,
+        #     )
+        # )
 
     def reload_glyphs(self):
         self.data = {}
-        font = Glyphs.font
-        current_tab = font.currentTab
+        self.glyph_order = []
+        self.font = Glyphs.font
+        current_tab = self.font.currentTab
         if current_tab:
             for layer in current_tab.layers:
+                self.glyph_order.append(layer.parent.name)
                 self.data[layer.parent.name] = {
-                    "RSB": layer.RSB,
-                    "LSB": layer.LSB,
-                    "Width": layer.width,
-                    "LF": layer.leftMetricsKey,
-                    "RF": layer.rightMetricsKey,
-                    "WF": layer.widthMetricsKey,
-                    "GLF": layer.parent.leftMetricsKey,
-                    "GRF": layer.parent.rightMetricsKey,
-                    "GWF": layer.parent.widthMetricsKey,
+                    "RSB": {
+                        "value": layer.RSB,
+                        "object": None,
+                    },
+                    "LSB": {
+                        "value": layer.LSB,
+                        "object": None,
+                    },
+                    "Width": {
+                        "value": layer.width,
+                        "object": None,
+                    },
+                    "L LF": {
+                        "value": layer.leftMetricsKey,
+                        "object": None,
+                    },
+                    "L RF": {
+                        "value": layer.rightMetricsKey,
+                        "object": None,
+                    },
+                    "L WF": {
+                        "value": layer.widthMetricsKey,
+                        "object": None,
+                    },
+                    "G LF": {
+                        "value": layer.parent.leftMetricsKey,
+                        "object": None,
+                    },
+                    "G RF": {
+                        "value": layer.parent.rightMetricsKey,
+                        "object": None,
+                    },
+                    "G WF": {
+                        "value": layer.parent.widthMetricsKey,
+                        "object": None,
+                    },
                 }
-        print(self.data)
         self.reload_glyphs_ui()
 
     def reload_glyphs_ui(self):
-        self.glyph_containers = []
+        self.glyph_containers = {}
         self.data_container.setSubviews_([])
-        for glyph_name, metrics in self.data.items():
+        for glyph_name in self.glyph_order:
+            metrics = self.data[glyph_name]
             glyph_container = NSView.alloc().init()
             glyph_container.setTranslatesAutoresizingMaskIntoConstraints_(
                 False
             )
             # glyph_container.setBackgroundColor_(NSColor.redColor())
-            self.glyph_containers.append(glyph_container)
+            self.glyph_containers[glyph_name] = glyph_container
             self.data_container.addSubview_(glyph_container)
 
             name_textbox = create_textBox(glyph_name)
@@ -525,10 +678,11 @@ class MetricsWindow:
                 )
             )
 
-            textFields = [
-                create_textEdit(metrics[metric_key])
-                for metric_key in metrics_keys
-            ]
+            textFields = []
+            for metric_key in metrics_keys:
+                textField = create_textEdit(metrics[metric_key]["value"])
+                self.data[glyph_name][metric_key]["object"] = textField
+                textFields.append(textField)
 
             for index, textfield in enumerate(textFields):
                 glyph_container.addSubview_(textfield)
@@ -590,7 +744,8 @@ class MetricsWindow:
                     )
                 )
 
-        for index, glyph_container in enumerate(self.glyph_containers):
+        for index, glyph_name in enumerate(self.glyph_order):
+            glyph_container = self.glyph_containers[glyph_name]
             if index == 0:
                 self.data_container.addConstraint_(
                     NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
@@ -612,7 +767,7 @@ class MetricsWindow:
                         container_separator,
                         NSLayoutAttributeLeading,
                         NSLayoutRelationEqual,
-                        self.glyph_containers[index - 1],
+                        self.glyph_containers[self.glyph_order[index - 1]],
                         NSLayoutAttributeTrailing,
                         1.0,
                         0,
@@ -701,10 +856,54 @@ class MetricsWindow:
         self.data_container_width_constraint.setConstant_(width)
         self.data_container.invalidateIntrinsicContentSize()
 
+    def apply_metrics_(self, sender):
+        current_tab = self.font.currentTab
+        if current_tab:
+            for layer in current_tab.layers:
+                glyph = layer.parent
+                if glyph.name not in self.data:
+                    continue
+                metrics = self.data[glyph.name]
+
+                layer.LSB = self._get_field_value(metrics["LSB"]["object"])
+                layer.RSB = self._get_field_value(metrics["RSB"]["object"])
+                layer.width = self._get_field_value(metrics["Width"]["object"])
+
+                try:
+                    layer.leftMetricsKey = self._get_field_value(
+                        metrics["L LF"]["object"]
+                    )
+                    layer.rightMetricsKey = self._get_field_value(
+                        metrics["L RF"]["object"]
+                    )
+                    layer.widthMetricsKey = self._get_field_value(
+                        metrics["L WF"]["object"]
+                    )
+
+                    glyph.leftMetricsKey = self._get_field_value(
+                        metrics["G LF"]["object"]
+                    )
+                    glyph.rightMetricsKey = self._get_field_value(
+                        metrics["G RF"]["object"]
+                    )
+                    glyph.widthMetricsKey = self._get_field_value(
+                        metrics["G WF"]["object"]
+                    )
+                except Exception as e:
+                    print(glyph.name, "INVALID VALUES")
+                    continue
+
+        self.reload_glyphs()
+
     @staticmethod
     def _size_from_screen():
         size = NSScreen.mainScreen().frame().size
         return int(size.width * 0.55), int(size.height * 0.8)
+
+    @staticmethod
+    def _get_field_value(field):
+        string_value = field.stringValue()
+        return string_value if string_value else None
 
 
 def main():
