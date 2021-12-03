@@ -526,9 +526,11 @@ class MetricsWindow:
         self.data = {}
         self.glyph_order = []
         self.font = Glyphs.font
+
         current_tab = self.font.currentTab
         if current_tab:
             for layer in current_tab.layers:
+                layer.syncMetrics()
                 self.glyph_order.append(layer.parent.name)
                 self.data[layer.parent.name] = {
                     "RSB": {
