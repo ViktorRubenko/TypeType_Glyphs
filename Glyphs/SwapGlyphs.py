@@ -1,6 +1,8 @@
 # MenuTitle: Swap Glyphs
 # -*- coding: utf-8 -*-
-
+__doc__ = """
+Swap multiple glyphs at once
+"""
 
 from vanilla import FloatingWindow, TextEditor, Button
 
