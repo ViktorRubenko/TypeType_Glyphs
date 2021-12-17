@@ -69,6 +69,7 @@ class SmallCapsDialog:
                 parent_name = parent_name[0].lower() + parent_name[1:]
             if parent_name not in font.glyphs:
                 self.failed_glyphs.append(glyph.name)
+                continue
             for layer in glyph.layers:
                 layer.leftMetricsKey = (
                     self.w.leftFormulaEditText.get()
