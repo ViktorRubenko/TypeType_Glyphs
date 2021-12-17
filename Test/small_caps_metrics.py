@@ -10,9 +10,9 @@ font = Glyphs.font
 
 
 class SmallCapsDialog:
-    def __init__(self, glyphs):
+    def __init__(self, glyphs, failed):
+        self.failed_glyphs = failed
         self.glyphs = glyphs
-        self.failed_glyphs = []
         self.w = vanilla.FloatingWindow((300, 300))
         self.w.leftFormulaTextBox = vanilla.TextBox("auto", "Left: ")
         self.w.rightFormulaTextBox = vanilla.TextBox("auto", "Right: ")
@@ -61,24 +61,16 @@ class SmallCapsDialog:
         self.w.close()
 
     def procced(self):
-        self.failed_glyphs = []
-        for glyph in self.glyphs:
-            parent_name = ".".join(glyph.name.split(".")[:-1])
-            parent_name = parent_name[0].upper() + parent_name[1:]
-            if parent_name not in font.glyphs:
-                parent_name = parent_name[0].lower() + parent_name[1:]
-            if parent_name not in font.glyphs:
-                self.failed_glyphs.append(glyph.name)
-                continue
-            for layer in glyph.layers:
+        for glyph, sc_glyph in self.glyphs.items():
+            for layer in sc_glyph.layers:
                 layer.leftMetricsKey = (
                     self.w.leftFormulaEditText.get()
-                    .replace("{parentName}", parent_name)
+                    .replace("{parentName}", glyph.name)
                     .replace(" ", "")
                 )
                 layer.rightMetricsKey = (
                     self.w.rightFormulaEditText.get()
-                    .replace("{parentName}", parent_name)
+                    .replace("{parentName}", glyph.name)
                     .replace(" ", "")
                 )
                 layer.syncMetrics()
@@ -88,21 +80,40 @@ class SmallCapsDialog:
 
 def main():
     if font.selectedLayers:
-        glyphs = [
+        sc_glyphs = [
             layer.parent
             for layer in font.selectedLayers
             if layer.parent.name.endswith(".sc")
         ]
     else:
-        glyphs = [glyph for glyph in font.glyphs if glyph.name.endswith(".sc")]
-    if glyphs:
-        confirm = askYesNo("Apply for {} small caps?".format(len(glyphs)))
+        sc_glyphs = [
+            glyph for glyph in font.glyphs if glyph.name.endswith(".sc")
+        ]
+    if sc_glyphs:
+        confirm = askYesNo("Apply for {} small caps?".format(len(sc_glyphs)))
     else:
         Message("Nan small caps were selected")
     if not confirm:
         return
 
-    SmallCapsDialog(glyphs=glyphs)
+    sc_pairs = {}
+    sc_glyph_names = [glyph.name for glyph in sc_glyphs]
+    for glyph in [
+        glyph for glyph in font.glyphs if not glyph.name.endswith(".sc")
+    ]:
+        sc_name = None
+        if glyph.name + ".sc" in sc_glyph_names:
+            sc_name = glyph.name + ".sc"
+        elif glyph.name[0].lower() + glyph.name[1:] + ".sc" in sc_glyph_names:
+            sc_name = glyph.name[0].lower() + glyph.name[1:] + ".sc"
+        elif glyph.name.lower() + ".sc" in sc_glyph_names:
+            sc_name = glyph.name.lower() + ".sc"
+        if sc_name:
+            sc_pairs[glyph] = font[sc_name]
+            sc_glyph_names.remove(sc_name)
+    failed_glyphs = sc_glyph_names
+
+    SmallCapsDialog(glyphs=sc_pairs, failed=failed_glyphs)
 
 
 if __name__ == "__main__":
