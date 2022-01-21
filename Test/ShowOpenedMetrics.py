@@ -4,7 +4,7 @@ __doc__ = """
 Open window with opened glyphs metrics values to view and edit.
 """
 
-
+import platform
 from vanilla import *
 from AppKit import (
     NSScreen,
@@ -28,6 +28,8 @@ textbox_gap = 5
 textbox_height = 20
 glyph_container_width = 100
 button_height = 25
+mac_version, _, _ = platform.mac_ver()
+mac_version = int(mac_version.split(".")[0])
 
 metrics_keys = (
     "LSB",
@@ -129,7 +131,7 @@ class MetricsWindow:
             len(metrics_keys) * (textbox_height + 2)
             + textbox_height
             + button_height
-            + 5
+            + 5 + (0 if mac_version > 10 else 15)
         )
         self.screen_size = NSScreen.mainScreen().frame().size
         self.w = FloatingWindow(
