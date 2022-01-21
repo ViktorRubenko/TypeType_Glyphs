@@ -1,4 +1,4 @@
-# MenuTitle: SmallCaps metrics setter
+# MenuTitle: Set small caps metrics
 # -*- coding: utf-8 -*-
 __doc__ = "Set metrics for small caps sidebearings"
 

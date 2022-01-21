@@ -1,5 +1,8 @@
 # MenuTitle: Show opened glyphs metrics
 # -*- coding: utf-8 -*-
+__doc__ = """
+Open window with opened glyphs metrics values to view and edit.
+"""
 
 
 from vanilla import *
