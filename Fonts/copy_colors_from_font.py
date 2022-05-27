@@ -12,7 +12,7 @@ class ColorsCopy(object):
 
         self.masters = [m for f in Glyphs.fonts for m in f.masters]
 
-        self.w = vanilla.FloatingWindow((450, 100), "Steal colors")
+        self.w = vanilla.FloatingWindow((450, 100), "Copy colors")
 
         self.w.text_anchor = vanilla.TextBox(
             (15, 12 + 2 + 12, 130, 14), "Copy colors from:", sizeStyle="small"
