@@ -1,69 +1,95 @@
-#MenuTitle: Steal colours from Font
-"""Copy glyphs colours from one font to another."""
+#MenuTitle: Steal colors from Font
+"""Copy glyphs colors from one font to another."""
 
 from __future__ import print_function
 import vanilla
 
-class ColoursCopy(object):
-	"""GUI for copying colours from one font to another"""
-	def __init__(self):
-		self.w = vanilla.FloatingWindow((450, 70), "Steal colours")
-		
-		self.w.text_anchor = vanilla.TextBox((15, 12+2, 130, 14), "Copy colours from:", sizeStyle='small')
-		self.w.from_font = vanilla.PopUpButton((150, 12, 150, 17), self.getFontsForButton(isSourceFont=True), sizeStyle='small', callback=self.buttonCheck)
-		
-		self.w.text_value = vanilla.TextBox((15, 12+2+25, 130, 14), "To selected glyphs in:", sizeStyle='small')
-		self.w.to_font = vanilla.PopUpButton((150, 12+25, 150, 17), self.getFontsForButton(isSourceFont=False), sizeStyle='small', callback=self.buttonCheck)
+class ColorsCopy(object):
+	"""GUI for copying colors from one font to another"""
 
-		self.w.copyOneMasterButton = vanilla.Button((-120, 12, -15, 17), "Copy One Master", sizeStyle='small', callback=self.copyColoursOneMaster)
-		self.w.copyAllMastersButton = vanilla.Button((-120, 12+25, -15, 17), "Copy All Masters", sizeStyle='small', callback=self.copyColoursAllMasters)
+	def __init__(self):
+
+		self.masters = [m for f in Glyphs.fonts for m in f.masters]
+
+		self.w = vanilla.FloatingWindow((450, 100), "Steal colors")
+		
+		self.w.text_anchor = vanilla.TextBox((15, 12+2+12, 130, 14), "Copy colors from:", sizeStyle='small')
+		self.w.from_master = vanilla.PopUpButton((150, 12+12, 150, 17), self.getMastersForButton(isSourceFont=True), sizeStyle='small', callback=self.buttonCheck)
+		
+		self.w.text_value = vanilla.TextBox((15, 12+2+25+12, 130, 14), "To selected glyphs in:", sizeStyle='small')
+		self.w.to_master = vanilla.PopUpButton((150, 12+25+12, 150, 17), self.getMastersForButton(isSourceFont=False), sizeStyle='small', callback=self.buttonCheck)
+
+		self.w.copyMasterColorsButton = vanilla.Button((-140, 12, -15, 17), "Copy Master Color", sizeStyle='small', callback=self.copyMasterColor)
+		self.w.copyGlyphColorsButton = vanilla.Button((-140, 12+25, -15, 17), "Copy Glyph Color", sizeStyle='small', callback=self.copyGlyphColor)
+		self.w.copyAllMastersButton = vanilla.Button((-140, 12+50, -15, 17), "Copy All Masters", sizeStyle='small', callback=self.copyColorsAllMasters)
 
 		self.w.open()
 		self.buttonCheck(None)
 		
 
-	def getFontsForButton(self, isSourceFont):
-		myFontList = ["%s - %s" % (f.familyName, f.selectedFontMaster.name) for f in Glyphs.fonts]
+	def getMastersForButton(self, isSourceFont):
+		return ["%s - %s" % (m.font.familyName, m.name) for m in (self.masters[::-1] if isSourceFont else self.masters)]
 
-		if isSourceFont:
-			myFontList.reverse()
+
+	def getMastersFromButtons(self):
+		sourceMaster = self.masters[::-1][self.w.from_master.get()]
+		targetMaster = self.masters[self.w.to_master.get()]
 		
-		return myFontList
+		return sourceMaster, targetMaster
 
 
-	def getFontsFromButtons(self):
-		fromFont = self.w.from_font.getItems()[ self.w.from_font.get() ]
-		toFont   = self.w.to_font.getItems()[ self.w.to_font.get() ]
-		
-		sourceFont = [f for f in Glyphs.fonts if ("%s - %s" % (f.familyName, f.selectedFontMaster.name)) == fromFont][0]
-		targetFont = [f for f in Glyphs.fonts if ("%s - %s" % (f.familyName, f.selectedFontMaster.name)) == toFont][0]
+	def removeColorsFromSelectionAllMasters(self):
+		_, targetMaster = self.getMastersFromButtons()
+		targetFont = targetMaster.font
 
-		return sourceFont, targetFont
-	
+		for targetGlyph in targetFont.selection:
+			targetGlyph.color = None
+			for layer in targetGlyph.layers:
+				layer.color = None
+
+
+	def removeMasterColorsFromSelection(self):
+		_, targetMaster = self.getMastersFromButtons()
+		targetFont = targetMaster.font
+
+		for targetGlyph in targetFont.selection:
+			targetGlyph.layers[targetMaster.id].color = None
+
+
+	def removeGlyphColorsFromSelection(self):
+		_, targetMaster = self.getMastersFromButtons()
+		targetFont = targetMaster.font
+
+		for targetGlyph in targetFont.selection:
+			targetGlyph.color = None
+
 
 	def buttonCheck(self, sender):
-		fromFont = self.w.from_font.getItems()[ self.w.from_font.get() ]
-		toFont   = self.w.to_font.getItems()[ self.w.to_font.get() ]
+		sourceMaster, targetMaster = self.getMastersFromButtons()
+		sourceFont, targetFont = sourceMaster.font, targetMaster.font
 
-		if fromFont != toFont:
-			self.w.copyOneMasterButton.enable(True)
-
-			targetFont, sourceFont = self.getFontsFromButtons()
-			if [m.name for m in targetFont.masters] == [m.name for m in sourceFont.masters]:
+		if sourceMaster != targetMaster:
+			self.w.copyMasterColorsButton.enable(True)
+			self.w.copyGlyphColorsButton.enable(True)
+			
+			if targetFont != sourceFont and [m.name for m in targetFont.masters] == [m.name for m in sourceFont.masters]:
 				self.w.copyAllMastersButton.enable(True)
 			else:
 				self.w.copyAllMastersButton.enable(False)
 
 		else:
-			self.w.copyOneMasterButton.enable(False)
+			self.w.copyMasterColorsButton.enable(False)
+			self.w.copyGlyphColorsButton.enable(False)
 			self.w.copyAllMastersButton.enable(False)
 
 
-	def copyColoursAllMasters(self, sender):		
+	def copyColorsAllMasters(self, sender):		
+		self.removeColorsFromSelectionAllMasters()
 
-		sourceFont, targetFont = self.getFontsFromButtons()
+		sourceMaster, targetMaster = self.getMastersFromButtons()
+		sourceFont, targetFont = sourceMaster.font, targetMaster.font
 
-		print("Syncing colours for", len(sourceFont.selection), "glyphs from", sourceFont.familyName, "to", targetFont.familyName, "for all masters.")
+		print("Syncing colors for", len(sourceFont.selection), "glyphs from", sourceFont.familyName, "to", targetFont.familyName, "for all masters.")
 
 		try:
 			for targetGlyph in targetFont.selection:
@@ -85,28 +111,26 @@ class ColoursCopy(object):
 		self.w.close()
 	
 
-	def copyColoursOneMaster(self, sender):
+	def copyMasterColor(self, sender):
+		self.removeMasterColorsFromSelection()
 
-		sourceFont, targetFont = self.getFontsFromButtons()
+		sourceMaster, targetMaster = self.getMastersFromButtons()
+		sourceFont, targetFont = sourceMaster.font, targetMaster.font
 		
 		print(
-			"Syncing colours for", 
+			"Copying master colors for", 
 			len(sourceFont.selection), 
 			"glyphs from", 
 			sourceFont.familyName, sourceFont.selectedFontMaster.name, 
 			"to", 
 			targetFont.familyName, targetFont.selectedFontMaster.name
 		)
-
-		targetMaster = targetFont.selectedFontMaster
-		sourceMaster = sourceFont.selectedFontMaster
 		
 		try:
 			for targetGlyph in targetFont.selection:
 				glyphName = targetGlyph.name
 				try:
 					sourceGlyph = sourceFont[glyphName]
-					targetGlyph.color = sourceGlyph.color
 
 					targetGlyph.layers[targetMaster.id].color = sourceGlyph.layers[sourceMaster.id].color
 				except Exception as e:
@@ -120,5 +144,38 @@ class ColoursCopy(object):
 			print("Done.")
 
 		self.w.close()
+
+	def copyGlyphColor(self, sender):
+		self.removeGlyphColorsFromSelection()
+
+		sourceMaster, targetMaster = self.getMastersFromButtons()
+		sourceFont, targetFont = sourceMaster.font, targetMaster.font
 		
-ColoursCopy()
+		print(
+			"Copying glyph colors for", 
+			len(sourceFont.selection), 
+			"glyphs from", 
+			sourceFont.familyName, sourceFont.selectedFontMaster.name, 
+			"to", 
+			targetFont.familyName, targetFont.selectedFontMaster.name
+		)
+		
+		try:
+			for targetGlyph in targetFont.selection:
+				glyphName = targetGlyph.name
+				try:
+					sourceGlyph = sourceFont[glyphName]
+					targetGlyph.color = sourceGlyph.color
+				except Exception as e:
+					print(glyphName,": Failed")
+					print(e)
+					
+		except Exception as e:
+			import traceback
+			print(traceback.format_exc())
+		finally:
+			print("Done.")
+
+		self.w.close()
+		
+ColorsCopy()
