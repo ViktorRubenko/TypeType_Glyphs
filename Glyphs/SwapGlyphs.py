@@ -50,6 +50,15 @@ class SwapWindow:
             left_glyph.name = "temp"
             right_glyph.name = left_name
             left_glyph.name = right_name
+            # CHANGE BASE GLYPH FOR COMPONENT, IF IT REFERS TO SWAPPED GLYPH
+            for l_layer in left_glyph.layers:
+                for component in l_layer.components:
+                    if component.name == right_name:
+                        component.name = left_name
+            for r_layer in right_glyph.layers:
+                for component in r_layer.components:
+                    if component.name == left_name:
+                        component.name = right_name
         Message("Swapped!", title="Success")
 
 
