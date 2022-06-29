@@ -1,4 +1,4 @@
-# MenuTitle: Show All Kerning Pairs for selection
+# MenuTitle: Show All Glyphs Pairs for Selection
 # -*- coding: utf-8 -*-
 __doc__ = """
 Generation of pairs for selected glyphs
