@@ -7,6 +7,7 @@ Compare bottom and top height values of selected glyphs with reference glyph
 
 
 from vanilla import *
+from AppKit import NSScreen
 
 
 class CompareWindow:
