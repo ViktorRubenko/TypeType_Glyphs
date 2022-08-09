@@ -47,6 +47,9 @@ class SwapWindow:
         for left_name, right_name in zip(left_glyphs, right_glyphs):
             left_glyph, right_glyph = font[left_name], font[right_name]
             print(left_glyph, right_glyph)
+
+            left_glyph.unicode, right_glyph.unicode = right_glyph.unicode, left_glyph.unicode
+
             left_glyph.name = "temp"
             right_glyph.name = left_name
             left_glyph.name = right_name
