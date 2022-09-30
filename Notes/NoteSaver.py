@@ -81,7 +81,7 @@ class NoteWriter:
                         for _ in self.notes[glyph_name]
                     )
                 )
-                f.write(u"\n" * 2)
+                f.write("\n" * 2)
 
 
 if __name__ == "__main__":
@@ -90,5 +90,5 @@ if __name__ == "__main__":
     nw.write_json()
     nw.write_to_txt()
     Message(
-        u"Filepath: \n{}".format(nw.path_txt), "Notes are saved", OKButton=None
+        "Filepath: \n{}".format(nw.path_txt), "Notes are saved", OKButton=None
     )

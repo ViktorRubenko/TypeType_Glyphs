@@ -18,9 +18,7 @@ def set_sb_keys(glyph, glayer):
     if glayer.widthMetricsKey or glyph.widthMetricsKey:
         return
     for key, value in ATTRS.items():
-        if not glayer.__getattribute__(key) and not glyph.__getattribute__(
-            key
-        ):
+        if not glayer.__getattribute__(key) and not glyph.__getattribute__(key):
             if glayer.hasAlignedWidth():
                 continue
             if not found:

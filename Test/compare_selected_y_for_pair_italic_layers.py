@@ -67,9 +67,7 @@ def main():
             for weight, pair in roman_italic.items():
                 if len(pair) != 2:
                     print(
-                        "Invalid weight/width {} pair: {},".format(
-                            weight, pair
-                        )
+                        "Invalid weight/width {} pair: {},".format(weight, pair)
                     )
                     continue
                 roman, italic = sorted(pair, key=lambda l: l.italicAngle())

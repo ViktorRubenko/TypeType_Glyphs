@@ -131,7 +131,8 @@ class MetricsWindow:
             len(metrics_keys) * (textbox_height + 2)
             + textbox_height
             + button_height
-            + 5 + (0 if mac_version > 10 else 15)
+            + 5
+            + (0 if mac_version > 10 else 15)
         )
         self.screen_size = NSScreen.mainScreen().frame().size
         self.w = FloatingWindow(
@@ -151,9 +152,7 @@ class MetricsWindow:
         self.hor_line_2 = create_line(NSColor.grayColor())
 
         self.data_container = NSView.alloc().init()
-        self.data_container.setTranslatesAutoresizingMaskIntoConstraints_(
-            False
-        )
+        self.data_container.setTranslatesAutoresizingMaskIntoConstraints_(False)
         self.data_container_width_constraint = NSLayoutConstraint.constraintWithItem_attribute_relatedBy_toItem_attribute_multiplier_constant_(
             self.data_container,
             NSLayoutAttributeWidth,
@@ -577,9 +576,7 @@ class MetricsWindow:
         for glyph_name in self.glyph_order:
             metrics = self.data[glyph_name]
             glyph_container = NSView.alloc().init()
-            glyph_container.setTranslatesAutoresizingMaskIntoConstraints_(
-                False
-            )
+            glyph_container.setTranslatesAutoresizingMaskIntoConstraints_(False)
             # glyph_container.setBackgroundColor_(NSColor.redColor())
             self.glyph_containers[glyph_name] = glyph_container
             self.data_container.addSubview_(glyph_container)

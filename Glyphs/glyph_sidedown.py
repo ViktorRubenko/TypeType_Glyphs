@@ -19,9 +19,7 @@ Rect_ = namedtuple("Rect", "top bottom left right".split())
 
 class OptionsWindow:
     def __init__(self, SideDown):
-        self.window = vanilla.FloatingWindow(
-            (200, 200), title="Glyph SideDown"
-        )
+        self.window = vanilla.FloatingWindow((200, 200), title="Glyph SideDown")
         h = 20
         self.window.labelTop = vanilla.TextBox((10, 10, -0, h), "Top")
         self.window.textTop = vanilla.EditText((80, 10, -10, h))

@@ -178,8 +178,7 @@ class CompareWindow:
             if glyph.name + ".sc" in sc_glyph_names:
                 sc_name = glyph.name + ".sc"
             elif (
-                glyph.name[0].lower() + glyph.name[1:] + ".sc"
-                in sc_glyph_names
+                glyph.name[0].lower() + glyph.name[1:] + ".sc" in sc_glyph_names
             ):
                 sc_name = glyph.name[0].lower() + glyph.name[1:] + ".sc"
             elif glyph.name.lower() + ".sc" in sc_glyph_names:

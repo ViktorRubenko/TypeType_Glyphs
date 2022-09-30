@@ -42,8 +42,7 @@ class PairSpaceCalculator:
     def compute_space(self, pair):
         self.font = Glyphs.font
         left_glyph, right_glyph = (
-            self.font.glyphs[u]
-            for u in ("{:04x}".format(ord(g)) for g in pair)
+            self.font.glyphs[u] for u in ("{:04x}".format(ord(g)) for g in pair)
         )
         if all((left_glyph, right_glyph)):
             return self._compute_space(left_glyph, right_glyph)

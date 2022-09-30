@@ -18,9 +18,7 @@ SERIF_GLYPHS = {
 class OptionsWindow:
     def __init__(self):
         self.window = vanilla.FloatingWindow((200, 120), title="Fix Serif")
-        self.window.label = vanilla.TextBox(
-            (10, 10, -0, 20), "Reference Serif"
-        )
+        self.window.label = vanilla.TextBox((10, 10, -0, 20), "Reference Serif")
         self.window.serifCombo = vanilla.ComboBox(
             (10, 35, -10, 20),
             list(SERIF_GLYPHS.keys()),

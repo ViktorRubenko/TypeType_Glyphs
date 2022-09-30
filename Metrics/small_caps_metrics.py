@@ -48,9 +48,7 @@ class SmallCapsDialog:
         self.procced()
         self.w.close()
         if self.failed_glyphs:
-            Message(
-                "{} small caps were failed".format(len(self.failed_glyphs))
-            )
+            Message("{} small caps were failed".format(len(self.failed_glyphs)))
             Glyphs.clearLog()
             print("Failed small caps:\n{}").format(
                 "\n".join(self.failed_glyphs)

@@ -31,9 +31,7 @@ if __name__ == "__main__":
     font_2_names = tuple(glyph.name for glyph in FONT_2.glyphs)
     font_1_names = tuple(glyph.name for glyph in FONT_1.glyphs)
     print(set(font_1_names).symmetric_difference(set(font_2_names)))
-    for glyph_name in set(font_1_names).symmetric_difference(
-        set(font_2_names)
-    ):
+    for glyph_name in set(font_1_names).symmetric_difference(set(font_2_names)):
         lw.w.myList.append(
             {
                 "Type": "Existence by Name",
