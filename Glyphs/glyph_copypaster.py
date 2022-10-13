@@ -56,10 +56,10 @@ class OptionsWindow:
     def copy(self, sender):
         selected_font = self.window.fontComboBox.get()
         if selected_font:
-        	try:
-            	font_copy = OTHER_FONTS[selected_font]
+            try:
+                font_copy = OTHER_FONTS[selected_font]
             except:
-            	print("Can't find source font. Source font must be opened.")
+                print("Can't find source font. Source font must be opened.")
             glyphs_list = [
                 glyph_name
                 for line in self.window.glyphsTextEdit.get().splitlines()
