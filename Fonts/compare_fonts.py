@@ -92,13 +92,13 @@ class CompareWindow:
         )
 
         self.w.exportTxtButton = Button(
-            (int(self.size[0] * 0.45) - 80, -40, -int(self.size[0] * 0.45) - 80, -15),
+            (int(self.size[0] * 0.5) - 150, -40, 140, -15),
             "Export to txt",
             callback=self.export_txt,
         )
 
         self.w.exportConsoleButton = Button(
-            (int(self.size[0] * 0.45) + 80, -40, -int(self.size[0] * 0.45) + 80, -15),
+            (int(self.size[0] * 0.5) + 30, -40, 140, -15),
             "Export to console",
             callback=self.export_to_console,
         )
