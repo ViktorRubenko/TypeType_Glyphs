@@ -24,7 +24,7 @@ class CompareWindow:
         self.size = self._size_from_screen()
         self.w = Window(self.size, "Compare Fonts")
 
-        self.w.selection_group = Group((0, 0, -0, 55))
+        self.w.selection_group = Group((0, 0, -0, 100))
         self.w.selection_group.font1 = PopUpButton(
             (10, 5, int(self.size[0] * 0.48), 21),
             self.font_names,
@@ -32,8 +32,7 @@ class CompareWindow:
         )
         self.w.selection_group.font1_masters = PopUpButton(
             (10, 31, int(self.size[0] * 0.48), 21),
-            [],
-            callback=self.find_difference,
+            []
         )
         self.w.selection_group.font2 = PopUpButton(
             (-10 - int(self.size[0] * 0.48), 5, -10, 21),
@@ -42,12 +41,46 @@ class CompareWindow:
         )
         self.w.selection_group.font2_masters = PopUpButton(
             (-10 - int(self.size[0] * 0.48), 31, -10, 21),
-            [],
-            callback=self.find_difference,
+            []
+        )
+        self.w.selection_group.contours_checkbox = CheckBox(
+            (20, 45, 0, 0),
+            "Contours",
+            callback=self.set_check_contours,
+            value=True
+        )
+        self.w.selection_group.only_y_checkbox = CheckBox(
+            (20, 80, 0, 0),
+            "Only y",
+            callback=self.set_check_only_y,
+            value=True
+        )
+        self.w.selection_group.components_checkout = CheckBox(
+            (120, 45, 0, 0),
+            "Components",
+            callback=self.set_check_only_y,
+            value=True
+        )
+        self.w.selection_group.anchors_checkout = CheckBox(
+            (240, 45, 0, 0),
+            "Anchors",
+            callback=self.set_check_only_y,
+            value=True
+        )
+        self.w.selection_group.metrics_checkout = CheckBox(
+            (340, 45, 0, 0),
+            "Metrics",
+            callback=self.set_check_only_y,
+            value=True
+        )
+        self.w.selection_group.compare_button = Button(
+            (int(self.size[0] * 0.45), -40, -int(self.size[0] * 0.45), -15),
+            "Compare",
+            callback=self.compare,
         )
 
         self.w.result_sheet = List(
-            (0, 60, -0, -50),
+            (0, 105, -0, -50),
             [],
             columnDescriptions=[
                 {"title": "Glyph"},
@@ -58,10 +91,16 @@ class CompareWindow:
             ],
         )
 
-        self.w.exportButton = Button(
-            (int(self.size[0] * 0.45), -40, -int(self.size[0] * 0.45), -15),
-            "Export",
+        self.w.exportTxtButton = Button(
+            (int(self.size[0] * 0.45) - 80, -40, -int(self.size[0] * 0.45) - 80, -15),
+            "Export to txt",
             callback=self.export_txt,
+        )
+
+        self.w.exportConsoleButton = Button(
+            (int(self.size[0] * 0.45) + 80, -40, -int(self.size[0] * 0.45) + 80, -15),
+            "Export to console",
+            callback=self.export_to_console,
         )
 
         self.w.selection_group.font1.set(0)
@@ -72,6 +111,18 @@ class CompareWindow:
 
         self.w.center()
         self.w.open()
+
+    def set_check_contours(self, sender):
+        if sender.get() == False:
+            self.w.selection_group.only_y_checkbox.set(False)
+
+    def set_check_only_y(self, sender):
+        if self.w.selection_group.contours_checkbox.get() == True:
+            return
+        self.w.selection_group.only_y_checkbox.set(False)
+
+    def compare(self, sender):
+        self.find_difference(None)
 
     def export_txt(self, sender):
         export_path = GetSaveFile(
@@ -118,20 +169,38 @@ class CompareWindow:
                     #         "{0}|{0}|{0}|{0}|{0}\n".format("_" * 20), "utf-8"
                     #     )
                     # )
+    def export_to_console(self, sender):
+        fieldnames = "Glyph Path Components Anchors Metrics".split()
+        max_len = max(
+            len(row["Glyph"]) for row in self.w.result_sheet.get()
+        )
+        for row in self.w.result_sheet.get():
+            for key, value in row.items():
+                if key != "Glyph" and value:
+                    print(
+                        unicode(
+                            "{0:<{3}} | {1:<10} | {2}\n".format(
+                                row["Glyph"],
+                                key,
+                                value,
+                                max_len,
+                            ),
+                            "utf-8",
+                        )
+                    )
+
 
     def set_masters_one(self, sender):
         font = self.fonts[sender.get()]
         self.w.selection_group.font1_masters.setItems(
             [i.name for i in font.masters]
         )
-        self.find_difference(None)
 
     def set_masters_two(self, sender):
         font = self.fonts[sender.get()]
         self.w.selection_group.font2_masters.setItems(
             [i.name for i in font.masters]
         )
-        self.find_difference(None)
 
     def find_difference(self, sender):
         rows = []
@@ -206,67 +275,73 @@ class CompareWindow:
             "Width": g2_layer.width,
         }
 
-        if len(components1) != len(components2):
-            cmp_result.append("Amount")
-        else:
-            if Counter(components1) == Counter(components2):
-                if components1 != components2:
-                    cmp_result.append("Order")
+        if self.w.selection_group.components_checkout.get():
+            if len(components1) != len(components2):
+                cmp_result.append("Amount")
+            else:
+                if Counter(components1) == Counter(components2):
+                    if components1 != components2:
+                        cmp_result.append("Order")
+                    else:
+                        if [c.transform for c in g1_layer.components] != [
+                            c.transform for c in g2_layer.components
+                        ]:
+                            cmp_result.append("Transform")
                 else:
-                    if [c.transform for c in g1_layer.components] != [
-                        c.transform for c in g2_layer.components
-                    ]:
-                        cmp_result.append("Transform")
+                    cmp_result.append("ParentGlyph")
+        if self.w.selection_group.contours_checkbox.get():
+            if len(g1_layer.paths) != len(g2_layer.paths):
+                path_result.append("Amount of contours")
             else:
-                cmp_result.append("ParentGlyph")
-
-        if len(g1_layer.paths) != len(g2_layer.paths):
-            path_result.append("Amount of contours")
-        else:
-            if len(points1) != len(points2):
-                path_result.append("Amount of points")
-            elif points1 != points2:
-                path_result.append("Points type")
-            else:
-                path_loop = True
-                for p1_index, p1 in enumerate(g1_layer.paths):
-                    if not path_loop:
-                        break
-                    p2 = g2_layer.paths[p1_index]
-                    for n1_index, n1 in enumerate(p1.nodes):
-                        n2 = p2.nodes[n1_index]
-                        if n1.position != n2.position:
-                            path_result.append("Node position")
-                            path_loop = False
+                if len(points1) != len(points2):
+                    path_result.append("Amount of points")
+                elif points1 != points2:
+                    path_result.append("Points type")
+                else:
+                    path_loop = True
+                    for p1_index, p1 in enumerate(g1_layer.paths):
+                        if not path_loop:
                             break
-
-        if len(anchors1) != len(anchors2):
-            anch_result.append("Amount")
-        else:
-            if anchors1 != anchors2:
-                for a1_index, a1 in enumerate(anchors1):
-                    a2 = anchors2[a1_index]
-                    if a1 != a2:
-                        anch_result.append(
-                            "Position:({}, {})/({}, {}))".format(
-                                a1.x, a1.y, a2.x, a2.y
+                        p2 = g2_layer.paths[p1_index]
+                        for n1_index, n1 in enumerate(p1.nodes):
+                            n2 = p2.nodes[n1_index]
+                            if n1.position != n2.position:
+                                if self.w.selection_group.only_y_checkbox.get():
+                                    if n1.position.y != n2.position.y:
+                                        path_result.append("Node y-position")
+                                        path_loop = False    
+                                else:
+                                    path_result.append("Node position")
+                                    path_loop = False
+                                break
+        if self.w.selection_group.anchors_checkout.get():
+            if len(anchors1) != len(anchors2):
+                anch_result.append("Amount")
+            else:
+                if anchors1 != anchors2:
+                    for a1_index, a1 in enumerate(anchors1):
+                        a2 = anchors2[a1_index]
+                        if a1 != a2:
+                            anch_result.append(
+                                "Position:({}, {})/({}, {}))".format(
+                                    a1.x, a1.y, a2.x, a2.y
+                                )
                             )
+        if self.w.selection_group.metrics_checkout.get():
+            if formulas1 != formulas2:
+                for f1_key, f1 in formulas1.items():
+                    f2 = formulas2[f1_key]
+                    if f1 != f2:
+                        metrics_result.append(
+                            "Formulas: ({}: {} / {})".format(f1_key, f1, f2)
                         )
-
-        if formulas1 != formulas2:
-            for f1_key, f1 in formulas1.items():
-                f2 = formulas2[f1_key]
-                if f1 != f2:
-                    metrics_result.append(
-                        "Formulas: ({}: {} / {})".format(f1_key, f1, f2)
-                    )
-        if metrics_values1 != metrics_values2:
-            for v1_key, v1 in metrics_values1.items():
-                v2 = metrics_values2[v1_key]
-                if v1 != v2:
-                    metrics_result.append(
-                        "Values:({}: {} / {})".format(v1_key, v1, v2)
-                    )
+            if metrics_values1 != metrics_values2:
+                for v1_key, v1 in metrics_values1.items():
+                    v2 = metrics_values2[v1_key]
+                    if v1 != v2:
+                        metrics_result.append(
+                            "Values:({}: {} / {})".format(v1_key, v1, v2)
+                        )
 
         return path_result, cmp_result, anch_result, metrics_result
 
