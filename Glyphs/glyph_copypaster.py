@@ -87,9 +87,7 @@ def glyph_copy_paste(
             print("Origin font doesn't have '{}' glyph".format(glyph_name))
             continue
         if not metrics_only:
-            copied_layer = copy.copy(
-                font_copy[glyph_name].layers[font_copy.selectedFontMaster.id]
-            )
+            copied_layer = font_copy[glyph_name].layers[font_copy.selectedFontMaster.id].copy()
             if glyph_name not in font_paste.glyphs:
                 glyph = GSGlyph()
                 glyph.name = glyph_name
