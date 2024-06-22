@@ -81,6 +81,7 @@ class SwapWindow:
                                 component.name = left_name
 
         Message("Swapped!", title="Success")
+        print("\n#### For VTT: ####\n")
         print(for_vtt)
 
 
