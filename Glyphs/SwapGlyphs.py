@@ -26,6 +26,9 @@ class SwapWindow:
         self.w.open()
 
     def swap_glyphs(self, sender):
+
+        for_vtt = dict()
+
         font = Glyphs.font
         if not font:
             return
@@ -45,6 +48,10 @@ class SwapWindow:
                 return
 
         for left_name, right_name in zip(left_glyphs, right_glyphs):
+
+            left_prod_name = Glyphs.productionGlyphName(left_name, font).encode('utf-8')
+            right_prod_name = Glyphs.productionGlyphName(right_name, font).encode('utf-8')
+
             left_glyph, right_glyph = font[left_name], font[right_name]
             print(left_glyph, right_glyph)
 
@@ -56,16 +63,25 @@ class SwapWindow:
             left_glyph.name = "temp"
             right_glyph.name = left_name
             left_glyph.name = right_name
-            # CHANGE BASE GLYPH FOR COMPONENT, IF IT REFERS TO SWAPPED GLYPH
-            for l_layer in left_glyph.layers:
-                for component in l_layer.components:
-                    if component.name == right_name:
-                        component.name = left_name
-            for r_layer in right_glyph.layers:
-                for component in r_layer.components:
-                    if component.name == left_name:
-                        component.name = right_name
+
+            for_vtt[left_prod_name] = right_prod_name
+            for_vtt[right_prod_name] = left_prod_name
+
+            # FIX FOR ACTIVE LAYER
+            
+            for glyph in font.glyphs:
+                b_names = [_.name for _ in glyph.layers[0].components]
+                if b_names and (left_name in b_names or right_name in b_names):
+                    for layer in glyph.layers:
+                        for component in layer.components:
+                            if component.name == left_name:
+                                component.name = right_name
+                                continue
+                            if component.name == right_name:
+                                component.name = left_name
+
         Message("Swapped!", title="Success")
+        print(for_vtt)
 
 
 SwapWindow()
